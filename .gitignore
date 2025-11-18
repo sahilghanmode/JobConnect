@@ -1,38 +1,113 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ---------------------------------------------------------
+# Global ignores for all apps and packages
+# ---------------------------------------------------------
 
-# Dependencies
-node_modules
-.pnp
-.pnp.js
+# Node modules
+node_modules/
+**/node_modules/
 
-# Local env files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Testing
-coverage
+# Build output
+dist/
+build/
+out/
+.next/
+.nuxt/
+.vercel/
+.temp/
+.tmp/
+temp/
+tmp/
+.cache/
 
 # Turbo
-.turbo
+.turbo/
+turbo.log
 
-# Vercel
-.vercel
+# TypeScript
+*.tsbuildinfo
+**/*.tsbuildinfo
 
-# Build Outputs
-.next/
-out/
-build
-dist
-
-
-# Debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Editor / OS junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.swp
+*.swo
+
+# Optional caches
+.cache/
+.eslintcache
+.parcel-cache/
+.next/
+vite.config.ts.timestamp*
+
+# Testing
+coverage/
+nyc_output/
+jest-cache/
+jest-global-mocks/
+
+# Type Checking
+*.d.ts.map
+
+# Prisma
+**/prisma/migrations/*
+!**/prisma/migrations/**/migration.sql
+**/prisma/generated/
+**/src/generated/prisma/
+
+# Lock files (optional for monorepos)
+# If using only one package manager globally, ignore others
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+*.local
+*.captures
+*.tgz
+
+# Output binaries
+*.exe
+*.out
+*.app
+
+# Temporary local tooling
+*.cache/
+*.tsbuildinfo
+*.eslintcache
+*.stylelintcache
+
+# Cloud / Deployment
+.vercel/
+.netlify/
+firebase-debug.log
+functions/lib/
+functions/node_modules/
+
+# Docker
+docker-data/
+*.pid
+*.seed
 
 # Misc
-.DS_Store
-*.pem
+*.orig
+*.patch

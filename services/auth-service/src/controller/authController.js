@@ -224,15 +224,62 @@ export const forgotPasswordController=async(req,res)=>{
 
         const user=await prisma.user.findUnique({where:{email}})
 
+        console.log(user)
         if(!user){
             return res.status(404).json({msg:"User not found"})
         }
 
-        const forgotPasswordToken=createToken(email)
+        const resetToken=jwt.sign({
+            email,
+            userId:user.id
+
+        },process.env.JWT_SECRET,{expiresIn:15*60*1000})
+
+        const resetUrl='https://fe/reset-password?token='+resetToken;
+
+        const mailOptions = {
+            from: 'thorsthorkel@gmail.com',
+            to:email,
+            subject:"Your Password Reset Link",
+            html:`
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>Password Reset Request</h2>
+                    <p>Click the link below to reset your password. This link will expire in 15 minutes.</p>
+                    <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #4a90e2; text-decoration: none; border-radius: 5px;">Reset Password</a>
+                    <p>If you didn't request a password reset, please ignore this email.</p>
+                </div>
+            `
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+            return res.status(200).json({msg:"Password reset link sent to your email"})
+        } catch (error) {
+            console.log("Email sent successfully"+error.message)
+            return res.status(500).json({msg:"Could not send password reset email"});
+        }
         
 
     }catch(err){
         console.log(err.message)
         return res.status(500).json({msg:"Internal Server Error"})
+    }
+}
+
+export const resetPasswordController=async(req,res)=>{
+    try {
+ 
+        const {token,newPassword}=req.body;
+        
+        const verifyToken=jwt.compare(token,process.env.JWT_SECRET);
+        console.log(verifyToken)
+        if(!verifyToken){
+            return res.status(404).json({msg:"Invalid or expired token"})
+        }
+
+        console.log(verifyToken)
+        
+    } catch (error) {
+        return res.status(500).json({msg:"Internal Server Error"})   
     }
 }

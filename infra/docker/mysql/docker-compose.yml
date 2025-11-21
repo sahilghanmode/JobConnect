@@ -3,11 +3,11 @@ version: "3.9"
 services:
   mysql:
     image: mysql:8.0
-    container_name: jobConnect-mysql
+    container_name: userDb
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: jobConnect
+      # MYSQL_DATABASE: jobConnect
       MYSQL_USER: sahil
       MYSQL_PASSWORD: mysecretpassword
     ports:

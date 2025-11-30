@@ -1,4 +1,4 @@
-import prisma from "../prismaClient.js";
+import {prisma} from '@repo/db'
 import nodemailer from "nodemailer";
 import dotenv from "dotenv"
 import jwt from "jsonwebtoken"
@@ -7,6 +7,10 @@ import bcrypt from "bcrypt"
 dotenv.config();
 
 const maxAge = 30 * 24 * 60 * 60 * 1000;
+
+BigInt.prototype.toJSON = function() {
+  return this.toString();
+};
 
 const createToken = (email, userId) => {
     return jwt.sign({ email, userId }, process.env.JWT_SECRET, { expiresIn: maxAge })

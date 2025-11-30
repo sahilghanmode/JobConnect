@@ -1,0 +1,27 @@
+{
+  "name": "@repo/db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --skip-generate",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force --skip-generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^22.19.1",
+    "prisma": "^6.3.1"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0"
+  },
+  "exports": {
+    ".":"./src/index.js"
+  }
+}

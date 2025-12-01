@@ -23,6 +23,28 @@ model User {
   otpExpiresAt DateTime? @map("otp_expires_at")
   isVerified   Boolean   @default(false) @map("is_verified")
   otpAttempts  Int       @default(0) @map("otp_attempts")
+
+  Profile Profile?
+
+  @@map("users")
+}
+
+model Profile {
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt   @unique
+  headline   String?
+  bio        String?  @db.Text
+  skills     Json?
+  experience String?  @db.Text
+  education  String?  @db.Text
+  location   String?
+  avatar_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
 }
 
 enum Role {

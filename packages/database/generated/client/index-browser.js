@@ -135,9 +135,28 @@ exports.Prisma.UserScalarFieldEnum = {
   otpAttempts: 'otpAttempts'
 };
 
+exports.Prisma.ProfileScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  headline: 'headline',
+  bio: 'bio',
+  skills: 'skills',
+  experience: 'experience',
+  education: 'education',
+  location: 'location',
+  avatar_url: 'avatar_url',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.NullsOrder = {
@@ -153,9 +172,30 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   otp: 'otp'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
+  headline: 'headline',
+  bio: 'bio',
+  experience: 'experience',
+  education: 'education',
+  location: 'location',
+  avatar_url: 'avatar_url'
+};
+
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Profile: 'Profile'
 };
 
 /**

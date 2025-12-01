@@ -107,9 +107,28 @@ exports.Prisma.UserScalarFieldEnum = {
   otpAttempts: 'otpAttempts'
 };
 
+exports.Prisma.ProfileScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  headline: 'headline',
+  bio: 'bio',
+  skills: 'skills',
+  experience: 'experience',
+  education: 'education',
+  location: 'location',
+  avatar_url: 'avatar_url',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.NullsOrder = {
@@ -124,6 +143,26 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   role: 'role',
   otp: 'otp'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
+  headline: 'headline',
+  bio: 'bio',
+  experience: 'experience',
+  education: 'education',
+  location: 'location',
+  avatar_url: 'avatar_url'
+};
 exports.Role = exports.$Enums.Role = {
   ADMIN: 'ADMIN',
   RECRUITER: 'RECRUITER',
@@ -131,7 +170,8 @@ exports.Role = exports.$Enums.Role = {
 };
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Profile: 'Profile'
 };
 /**
  * Create the Client
@@ -180,13 +220,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"./../generated/client\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           BigInt   @id @default(autoincrement())\n  email        String   @unique\n  HashPassword String   @map(\"hash_password\")\n  name         String?\n  role         String   @default(\"CANDIDATE\")\n  createdAt    DateTime @default(now()) @map(\"created_at\")\n  updatedAt    DateTime @updatedAt @map(\"updated_at\")\n\n  otp          String?   @db.VarChar(10)\n  otpExpiresAt DateTime? @map(\"otp_expires_at\")\n  isVerified   Boolean   @default(false) @map(\"is_verified\")\n  otpAttempts  Int       @default(0) @map(\"otp_attempts\")\n}\n\nenum Role {\n  ADMIN\n  RECRUITER\n  CANDIDATE\n}\n",
-  "inlineSchemaHash": "9b1371458448d89c2726aa6303c49d19ffa9c0b751239a2e6337bed50128f695",
+  "inlineSchema": "// This is your Prisma schema file\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"./../generated/client\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           BigInt   @id @default(autoincrement())\n  email        String   @unique\n  HashPassword String   @map(\"hash_password\")\n  name         String?\n  role         String   @default(\"CANDIDATE\")\n  createdAt    DateTime @default(now()) @map(\"created_at\")\n  updatedAt    DateTime @updatedAt @map(\"updated_at\")\n\n  otp          String?   @db.VarChar(10)\n  otpExpiresAt DateTime? @map(\"otp_expires_at\")\n  isVerified   Boolean   @default(false) @map(\"is_verified\")\n  otpAttempts  Int       @default(0) @map(\"otp_attempts\")\n\n  Profile Profile?\n\n  @@map(\"users\")\n}\n\nmodel Profile {\n  id         BigInt   @id @default(autoincrement())\n  user_id    BigInt   @unique\n  headline   String?\n  bio        String?  @db.Text\n  skills     Json?\n  experience String?  @db.Text\n  education  String?  @db.Text\n  location   String?\n  avatar_url String?\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)\n\n  @@map(\"profiles\")\n}\n\nenum Role {\n  ADMIN\n  RECRUITER\n  CANDIDATE\n}\n",
+  "inlineSchemaHash": "e1b5e4575868cf1c37428a9fa77bda09551ce5666d84005a1df37a7cb70b83e2",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"HashPassword\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"hash_password\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"otp\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"otpExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"otp_expires_at\"},{\"name\":\"isVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"is_verified\"},{\"name\":\"otpAttempts\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"otp_attempts\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"HashPassword\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"hash_password\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"otp\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"otpExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"otp_expires_at\"},{\"name\":\"isVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"is_verified\"},{\"name\":\"otpAttempts\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"otp_attempts\"},{\"name\":\"Profile\",\"kind\":\"object\",\"type\":\"Profile\",\"relationName\":\"ProfileToUser\"}],\"dbName\":\"users\"},\"Profile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"headline\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bio\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"skills\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"education\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ProfileToUser\"}],\"dbName\":\"profiles\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

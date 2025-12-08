@@ -111,3 +111,4 @@ docker-data/
 # Misc
 *.orig
 *.patch
+/.metadata/

@@ -8,4 +8,5 @@ import com.jobconnect.profile.entities.Profile;
 @Repository
 public interface ProfileRespository extends JpaRepository<Profile, Long> {
 	
+	
 }

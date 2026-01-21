@@ -37,10 +37,17 @@ public class ProfileController {
 	}
 	
 	@GetMapping("/me/{id}")
+	public ResponseEntity<Profile> getMyProfile(@PathVariable Long id){
+		Profile profile = service.getMyProfile(id);
+		return ResponseEntity.status(HttpStatus.OK).body(profile);		
+	}
+	
+	@GetMapping("/{id}")
 	public ResponseEntity<Profile> getProfile(@PathVariable Long id){
 		Profile profile = service.getProfile(id);
 		return ResponseEntity.status(HttpStatus.OK).body(profile);		
 	}
+	
 	@PutMapping("/me/skills/{id}")
 	public ResponseEntity<Profile> updateSkills(@PathVariable Long id, @RequestBody SkillAddDTO dto) {
 	    Profile skillsUpdated = service.updateSkills(id, dto);
@@ -67,7 +74,11 @@ public class ProfileController {
 	    public ResponseEntity<Profile> updateBio(@PathVariable Long id, @RequestBody BioDTO dto) {
 	        Profile updated = service.updateBio(id, dto);
 	        return ResponseEntity.ok(updated);
-	    }
+	}
+//	@GetMapping("/search/{id}")
+//		public ResponseEntity<Profile> getProfileOfOther(@PathVariable Long id){
+//		
+//	}
 //	@PutMapping("/me/certification/{id}")
 //	public ResponseEntity<Profile> updateCertification(@PathVariable Long id,@RequestBody CertificationAddDTO dto,Profile profile){
 //		Profile educationupdated = service.updateEducation(id,dto,profile);

@@ -55,10 +55,15 @@ public class ProfileServiceImpl implements ProfileService {
 				return profilerepo.save(existing);
 	}
 
+	@Override
+	public Profile getProfile(Long id) {
+	    return profilerepo.findById(id)  
+	        .orElseThrow(() -> new RuntimeException("Profile not found with id: " + id));
+	}  
 
 
 	@Override
-	public Profile getProfile(Long id) {
+	public Profile getMyProfile(Long id) {
 	    return profilerepo.findById(id)  
 	        .orElseThrow(() -> new RuntimeException("Profile not found with id: " + id));
 	}

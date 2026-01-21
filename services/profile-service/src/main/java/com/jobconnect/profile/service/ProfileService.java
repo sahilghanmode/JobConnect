@@ -16,9 +16,11 @@ public interface ProfileService {
 
 	public Profile updateEducation(Long id, EducationAddDTO dto);
 
-	public Profile getProfile(Long id);
+	public Profile getMyProfile(Long id);
 
 	public Profile updateHeadline(Long id, HeadlineDTO dto);
 
 	public Profile updateBio(Long id, BioDTO dto);
+
+	public Profile getProfile(Long id);
 }

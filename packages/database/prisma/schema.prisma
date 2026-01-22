@@ -25,7 +25,11 @@ model User {
   otpAttempts   Int       @default(0) @map("otp_attempts")
 
   Profile       Profile?
+  Posts         Post[]
+  PostLikes     PostLike[]
+  Comments      Comment[]
   @@map("users")
+  
 }
 
 model Profile {
@@ -45,6 +49,54 @@ model Profile {
   
   @@map("profiles")
 }
+
+model Post {
+  post_id     BigInt      @id @default(autoincrement())
+  user_id     BigInt
+  content     String      @db.Text
+  image_url   String?     @db.VarChar(500)
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  
+  user        User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  likes       PostLike[]
+  comments    Comment[]
+  
+  @@index([user_id])
+  @@index([created_at])
+  @@map("posts")
+}
+
+model PostLike {
+  like_id     BigInt   @id @default(autoincrement())
+  post_id     BigInt
+  user_id     BigInt
+  created_at  DateTime @default(now())
+  
+  post        Post     @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@unique([post_id, user_id])
+  @@index([post_id])
+  @@map("post_likes")
+}
+
+model Comment {
+  comment_id  BigInt   @id @default(autoincrement())
+  post_id     BigInt
+  user_id     BigInt
+  content     String   @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  post        Post     @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([post_id])
+  @@index([user_id])
+  @@map("comments")
+}
+
 
 enum Role {
   ADMIN

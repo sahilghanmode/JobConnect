@@ -1,8 +1,12 @@
 package com.jobconnect.profile.controller;
 
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,81 +14,147 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jobconnect.profile.dto.AvatarDTO;
 import com.jobconnect.profile.dto.BioDTO;
 import com.jobconnect.profile.dto.EducationAddDTO;
 import com.jobconnect.profile.dto.ExperienceAddDTO;
 import com.jobconnect.profile.dto.HeadlineDTO;
+import com.jobconnect.profile.dto.LocationDTO;
+import com.jobconnect.profile.dto.ProfileUpdateDTO;
 import com.jobconnect.profile.dto.SkillAddDTO;
 import com.jobconnect.profile.entities.Profile;
 import com.jobconnect.profile.service.ProfileService;
 
-import lombok.RequiredArgsConstructor;
-
+import lombok.AllArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RequestMapping("/api/profile")
 public class ProfileController {
 	private final ProfileService service;
 
+	//Add Profile
 	@PostMapping("/addprofile")
 	public ResponseEntity<Profile> createProfile(@RequestBody Profile profile){
 		System.out.println("working");
 		Profile created= service.addProfile(profile);
-		return ResponseEntity.status(HttpStatus.ACCEPTED).body(created);
+		return ResponseEntity.status(HttpStatus.CREATED).body(created);
 	}
 	
-	@GetMapping("/me/{id}")
-	public ResponseEntity<Profile> getMyProfile(@PathVariable Long id){
-		Profile profile = service.getMyProfile(id);
-		return ResponseEntity.status(HttpStatus.OK).body(profile);		
-	}
-	
+
+	//Get Profile
 	@GetMapping("/{id}")
 	public ResponseEntity<Profile> getProfile(@PathVariable Long id){
 		Profile profile = service.getProfile(id);
-		return ResponseEntity.status(HttpStatus.OK).body(profile);		
+		return ResponseEntity.ok(profile);
 	}
 	
+	//Get Profile by user Id
+	@GetMapping("/user/{userId}")
+	public ResponseEntity<Profile> getProfileByUserId(@PathVariable Long userId){
+		Profile profile = service.getProfileByUserId(userId);
+		return ResponseEntity.ok(profile);
+	}
+	
+	//Get all profiles by pagination
+	@GetMapping
+	public ResponseEntity<Page<Profile>> getAllProfiles(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+			){
+		Page<Profile> profiles = service.getAllProfiles(page,size);
+		return ResponseEntity.ok(profiles);		
+	}
+	
+	//Update Complete Profile
+	@PutMapping("/{id}")
+    public ResponseEntity<Profile> updateProfile(@PathVariable Long id, @RequestBody ProfileUpdateDTO dto) {
+        Profile updated = service.updateProfile(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+	
+	//Skill update
 	@PutMapping("/me/skills/{id}")
 	public ResponseEntity<Profile> updateSkills(@PathVariable Long id, @RequestBody SkillAddDTO dto) {
 	    Profile skillsUpdated = service.updateSkills(id, dto);
 	    return ResponseEntity.status(HttpStatus.ACCEPTED).body(skillsUpdated);
 	}
 
-	@PutMapping("/me/experiences/{id}")
+	//experience update 
+	@PutMapping("/me/experience/{id}")
 	public ResponseEntity<Profile> updateExperience(@PathVariable Long id, @RequestBody ExperienceAddDTO dto) {
 	    Profile experienceUpdated = service.updateExperience(id, dto);
 	    return ResponseEntity.status(HttpStatus.ACCEPTED).body(experienceUpdated);
 	}
 
+	//education update
 	@PutMapping("/me/education/{id}")
 	public ResponseEntity<Profile> updateEducation(@PathVariable Long id, @RequestBody EducationAddDTO dto) {
 	    Profile educationUpdated = service.updateEducation(id, dto);
 	    return ResponseEntity.status(HttpStatus.ACCEPTED).body(educationUpdated);
 	}
-	@PatchMapping("/me/headline/{id}")
+	
+	//headline update
+	@PatchMapping("/{id}/headline")
     public ResponseEntity<Profile> updateHeadline(@PathVariable Long id, @RequestBody HeadlineDTO dto) {
         Profile updated = service.updateHeadline(id, dto);
         return ResponseEntity.ok(updated);
     }
-	 @PatchMapping("/me/bio/{id}")
+	
+	//bio update
+	 @PatchMapping("/{id}/bio")
 	    public ResponseEntity<Profile> updateBio(@PathVariable Long id, @RequestBody BioDTO dto) {
 	        Profile updated = service.updateBio(id, dto);
 	        return ResponseEntity.ok(updated);
 	}
-//	@GetMapping("/search/{id}")
-//		public ResponseEntity<Profile> getProfileOfOther(@PathVariable Long id){
-//		
-//	}
-//	@PutMapping("/me/certification/{id}")
-//	public ResponseEntity<Profile> updateCertification(@PathVariable Long id,@RequestBody CertificationAddDTO dto,Profile profile){
-//		Profile educationupdated = service.updateEducation(id,dto,profile);
-//		
-//		return ResponseEntity.status(HttpStatus.ACCEPTED).body(educationupdated);
-//	}
 
+
+	 //location update
+	 @PatchMapping("/{id}/location")
+	 public ResponseEntity<Profile> updateLocation(@PathVariable Long id,@RequestBody LocationDTO dto){
+		 Profile updated = service.updateLocation(id,dto);
+		 return ResponseEntity.ok(updated);
+	 }
+	 
+	 //avatar update
+	 @PatchMapping("/{id}/avatar")
+	    public ResponseEntity<Profile> updateAvatar(@PathVariable Long id, @RequestBody AvatarDTO dto) {
+	        Profile updated = service.updateAvatar(id, dto);
+	        return ResponseEntity.ok(updated);
+	    }
+	 
+	 //  Delete Profile
+	    @DeleteMapping("/{id}")
+	    public ResponseEntity<Void> deleteProfile(@PathVariable Long id) {
+	        service.deleteProfile(id);
+	        return ResponseEntity.noContent().build();
+	    }
+	    
+	    //  Search Profiles
+	    @GetMapping("/search")
+	    public ResponseEntity<List<Profile>> searchProfiles(
+	        @RequestParam(required = false) String skills,
+	        @RequestParam(required = false) String location
+	    ) {
+	        List<Profile> profiles = service.searchProfiles(skills, location);
+	        return ResponseEntity.ok(profiles);
+	    }
+	    
+	    // Get by Location
+	    @GetMapping("/location/{location}")
+	    public ResponseEntity<List<Profile>> getByLocation(@PathVariable String location) {
+	        List<Profile> profiles = service.getByLocation(location);
+	        return ResponseEntity.ok(profiles);
+	    }
+	    
+	    //  Get by Skill
+	    @GetMapping("/skill/{skill}")
+	    public ResponseEntity<List<Profile>> getBySkill(@PathVariable String skill) {
+	        List<Profile> profiles = service.getBySkill(skill);
+	        return ResponseEntity.ok(profiles);
+	    }
 
 }

@@ -96,7 +96,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
-  HashPassword: 'HashPassword',
+  hashPassword: 'hashPassword',
   name: 'name',
   role: 'role',
   createdAt: 'createdAt',
@@ -116,8 +116,53 @@ exports.Prisma.ProfileScalarFieldEnum = {
   experience: 'experience',
   education: 'education',
   location: 'location',
-  avatar_url: 'avatar_url',
-  created_at: 'created_at',
+  avatarUrl: 'avatarUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CompanyScalarFieldEnum = {
+  company_id: 'company_id',
+  name: 'name',
+  description: 'description',
+  website: 'website',
+  logoUrl: 'logoUrl',
+  industry: 'industry',
+  size: 'size',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.JobScalarFieldEnum = {
+  job_id: 'job_id',
+  recruiter_id: 'recruiter_id',
+  company_id: 'company_id',
+  company_name: 'company_name',
+  job_title: 'job_title',
+  description: 'description',
+  requirements: 'requirements',
+  responsibilities: 'responsibilities',
+  employment_type: 'employment_type',
+  experience_level: 'experience_level',
+  salary_min: 'salary_min',
+  salary_max: 'salary_max',
+  location: 'location',
+  is_remote: 'is_remote',
+  skills_required: 'skills_required',
+  status: 'status',
+  expires_at: 'expires_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ApplicationScalarFieldEnum = {
+  application_id: 'application_id',
+  job_id: 'job_id',
+  candidate_id: 'candidate_id',
+  resume_url: 'resume_url',
+  cover_letter: 'cover_letter',
+  status: 'status',
+  applied_at: 'applied_at',
   updated_at: 'updated_at'
 };
 
@@ -126,15 +171,15 @@ exports.Prisma.PostScalarFieldEnum = {
   user_id: 'user_id',
   content: 'content',
   image_url: 'image_url',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PostLikeScalarFieldEnum = {
   like_id: 'like_id',
   post_id: 'post_id',
   user_id: 'user_id',
-  created_at: 'created_at'
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.CommentScalarFieldEnum = {
@@ -142,8 +187,8 @@ exports.Prisma.CommentScalarFieldEnum = {
   post_id: 'post_id',
   user_id: 'user_id',
   content: 'content',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -163,9 +208,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
   email: 'email',
-  HashPassword: 'HashPassword',
+  hashPassword: 'hashPassword',
   name: 'name',
-  role: 'role',
   otp: 'otp'
 };
 
@@ -186,7 +230,32 @@ exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
   experience: 'experience',
   education: 'education',
   location: 'location',
-  avatar_url: 'avatar_url'
+  avatarUrl: 'avatarUrl'
+};
+
+exports.Prisma.CompanyOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  website: 'website',
+  logoUrl: 'logoUrl',
+  industry: 'industry',
+  size: 'size'
+};
+
+exports.Prisma.JobOrderByRelevanceFieldEnum = {
+  company_name: 'company_name',
+  job_title: 'job_title',
+  description: 'description',
+  requirements: 'requirements',
+  responsibilities: 'responsibilities',
+  employment_type: 'employment_type',
+  experience_level: 'experience_level',
+  location: 'location'
+};
+
+exports.Prisma.ApplicationOrderByRelevanceFieldEnum = {
+  resume_url: 'resume_url',
+  cover_letter: 'cover_letter'
 };
 
 exports.Prisma.PostOrderByRelevanceFieldEnum = {
@@ -203,9 +272,26 @@ exports.Role = exports.$Enums.Role = {
   CANDIDATE: 'CANDIDATE'
 };
 
+exports.JobStatus = exports.$Enums.JobStatus = {
+  ACTIVE: 'ACTIVE',
+  CLOSED: 'CLOSED',
+  DRAFT: 'DRAFT'
+};
+
+exports.ApplicationStatus = exports.$Enums.ApplicationStatus = {
+  PENDING: 'PENDING',
+  REVIEWED: 'REVIEWED',
+  SHORTLISTED: 'SHORTLISTED',
+  REJECTED: 'REJECTED',
+  ACCEPTED: 'ACCEPTED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Profile: 'Profile',
+  Company: 'Company',
+  Job: 'Job',
+  Application: 'Application',
   Post: 'Post',
   PostLike: 'PostLike',
   Comment: 'Comment'
@@ -221,7 +307,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\cdac_assignments\\Project\\JobConnect\\packages\\database\\generated\\client",
+      "value": "C:\\Users\\ANAND\\Desktop\\JobConnect\\JobConnect\\packages\\database\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -235,7 +321,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\cdac_assignments\\Project\\JobConnect\\packages\\database\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\ANAND\\Desktop\\JobConnect\\JobConnect\\packages\\database\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -257,13 +343,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"./../generated/client\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           BigInt   @id @default(autoincrement())\n  email        String   @unique\n  HashPassword String   @map(\"hash_password\")\n  name         String?\n  role         String   @default(\"CANDIDATE\")\n  createdAt    DateTime @default(now()) @map(\"created_at\")\n  updatedAt    DateTime @updatedAt @map(\"updated_at\")\n\n  otp          String?   @db.VarChar(10)\n  otpExpiresAt DateTime? @map(\"otp_expires_at\")\n  isVerified   Boolean   @default(false) @map(\"is_verified\")\n  otpAttempts  Int       @default(0) @map(\"otp_attempts\")\n\n  Profile   Profile?\n  Posts     Post[]\n  PostLikes PostLike[]\n  Comments  Comment[]\n\n  @@map(\"users\")\n}\n\nmodel Profile {\n  id         BigInt   @id @default(autoincrement())\n  user_id    BigInt   @unique\n  headline   String?\n  bio        String?  @db.Text\n  skills     Json?\n  experience String?  @db.Text\n  education  String?  @db.Text\n  location   String?\n  avatar_url String?\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)\n\n  @@map(\"profiles\")\n}\n\nmodel Post {\n  post_id    BigInt   @id @default(autoincrement())\n  user_id    BigInt\n  content    String   @db.Text\n  image_url  String?  @db.VarChar(500)\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  user     User       @relation(fields: [user_id], references: [id], onDelete: Cascade)\n  likes    PostLike[]\n  comments Comment[]\n\n  @@index([user_id])\n  @@index([created_at])\n  @@map(\"posts\")\n}\n\nmodel PostLike {\n  like_id    BigInt   @id @default(autoincrement())\n  post_id    BigInt\n  user_id    BigInt\n  created_at DateTime @default(now())\n\n  post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)\n  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)\n\n  @@unique([post_id, user_id])\n  @@index([post_id])\n  @@map(\"post_likes\")\n}\n\nmodel Comment {\n  comment_id BigInt   @id @default(autoincrement())\n  post_id    BigInt\n  user_id    BigInt\n  content    String   @db.Text\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)\n  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)\n\n  @@index([post_id])\n  @@index([user_id])\n  @@map(\"comments\")\n}\n\nenum Role {\n  ADMIN\n  RECRUITER\n  CANDIDATE\n}\n",
-  "inlineSchemaHash": "a2203c5e8e7ad23c8b6323556ef766c5d02148e2132bbbc8f9bf83bf87ac6d1e",
+  "inlineSchema": "// This is your Prisma schema file\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"./../generated/client\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Role {\n  ADMIN\n  RECRUITER\n  CANDIDATE\n}\n\nenum JobStatus {\n  ACTIVE\n  CLOSED\n  DRAFT\n}\n\nenum ApplicationStatus {\n  PENDING\n  REVIEWED\n  SHORTLISTED\n  REJECTED\n  ACCEPTED\n}\n\nmodel User {\n  id           BigInt  @id @default(autoincrement())\n  email        String  @unique\n  hashPassword String  @map(\"hash_password\")\n  name         String?\n  role         Role    @default(CANDIDATE)\n\n  createdAt DateTime @default(now()) @map(\"created_at\")\n  updatedAt DateTime @updatedAt @map(\"updated_at\")\n\n  otp          String?   @db.VarChar(10)\n  otpExpiresAt DateTime? @map(\"otp_expires_at\")\n  isVerified   Boolean   @default(false) @map(\"is_verified\")\n  otpAttempts  Int       @default(0) @map(\"otp_attempts\")\n\n  profile       Profile?\n  posts         Post[]\n  postLikes     PostLike[]\n  comments      Comment[]\n  recruiterJobs Job[]\n  applications  Application[]\n\n  @@map(\"users\")\n}\n\nmodel Profile {\n  id         BigInt  @id @default(autoincrement())\n  user_id    BigInt  @unique\n  headline   String?\n  bio        String? @db.Text\n  skills     Json?\n  experience String? @db.Text\n  education  String? @db.Text\n  location   String?\n  avatarUrl  String? @map(\"avatar_url\")\n\n  createdAt DateTime @default(now()) @map(\"created_at\")\n  updatedAt DateTime @updatedAt @map(\"updated_at\")\n\n  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)\n\n  @@map(\"profiles\")\n}\n\nmodel Company {\n  company_id  BigInt  @id @default(autoincrement())\n  name        String  @db.VarChar(255)\n  description String? @db.Text\n  website     String?\n  logoUrl     String? @map(\"logo_url\")\n  industry    String?\n  size        String?\n\n  createdAt DateTime @default(now()) @map(\"created_at\")\n  updatedAt DateTime @updatedAt @map(\"updated_at\")\n\n  jobs Job[]\n\n  @@map(\"companies\")\n}\n\nmodel Job {\n  job_id       BigInt @id @default(autoincrement())\n  recruiter_id BigInt\n  company_id   BigInt\n\n  company_name     String  @db.VarChar(255)\n  job_title        String  @db.VarChar(255)\n  description      String  @db.Text\n  requirements     String  @db.Text\n  responsibilities String? @db.Text\n\n  employment_type  String @db.VarChar(255)\n  experience_level String @db.VarChar(255)\n\n  salary_min Decimal? @db.Decimal(10, 2)\n  salary_max Decimal? @db.Decimal(10, 2)\n\n  location  String? @db.VarChar(255)\n  is_remote Boolean @default(false)\n\n  skills_required Json?\n  status          JobStatus @default(ACTIVE)\n  expires_at      DateTime?\n\n  createdAt DateTime @default(now()) @map(\"created_at\")\n  updatedAt DateTime @updatedAt @map(\"updated_at\")\n\n  recruiter    User          @relation(fields: [recruiter_id], references: [id], onDelete: Cascade)\n  company      Company       @relation(fields: [company_id], references: [company_id])\n  applications Application[]\n\n  @@index([recruiter_id])\n  @@index([company_id])\n  @@index([status])\n  @@map(\"jobs\")\n}\n\nmodel Application {\n  application_id BigInt @id @default(autoincrement())\n  job_id         BigInt\n  candidate_id   BigInt\n\n  resume_url   String?\n  cover_letter String?           @db.Text\n  status       ApplicationStatus @default(PENDING)\n\n  applied_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  job       Job  @relation(fields: [job_id], references: [job_id], onDelete: Cascade)\n  candidate User @relation(fields: [candidate_id], references: [id], onDelete: Cascade)\n\n  @@unique([job_id, candidate_id])\n  @@index([status])\n  @@map(\"applications\")\n}\n\nmodel Post {\n  post_id   BigInt  @id @default(autoincrement())\n  user_id   BigInt\n  content   String  @db.Text\n  image_url String?\n\n  createdAt DateTime @default(now()) @map(\"created_at\")\n  updatedAt DateTime @updatedAt @map(\"updated_at\")\n\n  user     User       @relation(fields: [user_id], references: [id], onDelete: Cascade)\n  likes    PostLike[]\n  comments Comment[]\n\n  @@index([user_id])\n  @@map(\"posts\")\n}\n\nmodel PostLike {\n  like_id BigInt @id @default(autoincrement())\n  post_id BigInt\n  user_id BigInt\n\n  createdAt DateTime @default(now()) @map(\"created_at\")\n\n  post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)\n  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)\n\n  @@unique([post_id, user_id])\n  @@map(\"post_likes\")\n}\n\nmodel Comment {\n  comment_id BigInt @id @default(autoincrement())\n  post_id    BigInt\n  user_id    BigInt\n  content    String @db.Text\n\n  createdAt DateTime @default(now()) @map(\"created_at\")\n  updatedAt DateTime @updatedAt @map(\"updated_at\")\n\n  post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)\n  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)\n\n  @@map(\"comments\")\n}\n",
+  "inlineSchemaHash": "def082df5dec4954358f1a505d5270fe2d5b109ad5d2dbdf198bd8131be400dd",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"HashPassword\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"hash_password\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"otp\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"otpExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"otp_expires_at\"},{\"name\":\"isVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"is_verified\"},{\"name\":\"otpAttempts\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"otp_attempts\"},{\"name\":\"Profile\",\"kind\":\"object\",\"type\":\"Profile\",\"relationName\":\"ProfileToUser\"},{\"name\":\"Posts\",\"kind\":\"object\",\"type\":\"Post\",\"relationName\":\"PostToUser\"},{\"name\":\"PostLikes\",\"kind\":\"object\",\"type\":\"PostLike\",\"relationName\":\"PostLikeToUser\"},{\"name\":\"Comments\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"CommentToUser\"}],\"dbName\":\"users\"},\"Profile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"headline\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bio\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"skills\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"education\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ProfileToUser\"}],\"dbName\":\"profiles\"},\"Post\":{\"fields\":[{\"name\":\"post_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"image_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PostToUser\"},{\"name\":\"likes\",\"kind\":\"object\",\"type\":\"PostLike\",\"relationName\":\"PostToPostLike\"},{\"name\":\"comments\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"CommentToPost\"}],\"dbName\":\"posts\"},\"PostLike\":{\"fields\":[{\"name\":\"like_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"post_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"post\",\"kind\":\"object\",\"type\":\"Post\",\"relationName\":\"PostToPostLike\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PostLikeToUser\"}],\"dbName\":\"post_likes\"},\"Comment\":{\"fields\":[{\"name\":\"comment_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"post_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"post\",\"kind\":\"object\",\"type\":\"Post\",\"relationName\":\"CommentToPost\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"CommentToUser\"}],\"dbName\":\"comments\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"hashPassword\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"hash_password\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"otp\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"otpExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"otp_expires_at\"},{\"name\":\"isVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"is_verified\"},{\"name\":\"otpAttempts\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"otp_attempts\"},{\"name\":\"profile\",\"kind\":\"object\",\"type\":\"Profile\",\"relationName\":\"ProfileToUser\"},{\"name\":\"posts\",\"kind\":\"object\",\"type\":\"Post\",\"relationName\":\"PostToUser\"},{\"name\":\"postLikes\",\"kind\":\"object\",\"type\":\"PostLike\",\"relationName\":\"PostLikeToUser\"},{\"name\":\"comments\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"CommentToUser\"},{\"name\":\"recruiterJobs\",\"kind\":\"object\",\"type\":\"Job\",\"relationName\":\"JobToUser\"},{\"name\":\"applications\",\"kind\":\"object\",\"type\":\"Application\",\"relationName\":\"ApplicationToUser\"}],\"dbName\":\"users\"},\"Profile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"headline\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bio\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"skills\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"education\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatarUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"avatar_url\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ProfileToUser\"}],\"dbName\":\"profiles\"},\"Company\":{\"fields\":[{\"name\":\"company_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"website\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"logoUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"logo_url\"},{\"name\":\"industry\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"size\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"jobs\",\"kind\":\"object\",\"type\":\"Job\",\"relationName\":\"CompanyToJob\"}],\"dbName\":\"companies\"},\"Job\":{\"fields\":[{\"name\":\"job_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"recruiter_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"company_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"company_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"job_title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"requirements\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"responsibilities\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employment_type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"experience_level\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"salary_min\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"salary_max\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"is_remote\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"skills_required\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"JobStatus\"},{\"name\":\"expires_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"recruiter\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"JobToUser\"},{\"name\":\"company\",\"kind\":\"object\",\"type\":\"Company\",\"relationName\":\"CompanyToJob\"},{\"name\":\"applications\",\"kind\":\"object\",\"type\":\"Application\",\"relationName\":\"ApplicationToJob\"}],\"dbName\":\"jobs\"},\"Application\":{\"fields\":[{\"name\":\"application_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"job_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"candidate_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"resume_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"cover_letter\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ApplicationStatus\"},{\"name\":\"applied_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"job\",\"kind\":\"object\",\"type\":\"Job\",\"relationName\":\"ApplicationToJob\"},{\"name\":\"candidate\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ApplicationToUser\"}],\"dbName\":\"applications\"},\"Post\":{\"fields\":[{\"name\":\"post_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"image_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PostToUser\"},{\"name\":\"likes\",\"kind\":\"object\",\"type\":\"PostLike\",\"relationName\":\"PostToPostLike\"},{\"name\":\"comments\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"CommentToPost\"}],\"dbName\":\"posts\"},\"PostLike\":{\"fields\":[{\"name\":\"like_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"post_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"post\",\"kind\":\"object\",\"type\":\"Post\",\"relationName\":\"PostToPostLike\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PostLikeToUser\"}],\"dbName\":\"post_likes\"},\"Comment\":{\"fields\":[{\"name\":\"comment_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"post_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"post\",\"kind\":\"object\",\"type\":\"Post\",\"relationName\":\"CommentToPost\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"CommentToUser\"}],\"dbName\":\"comments\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

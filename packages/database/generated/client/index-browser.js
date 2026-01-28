@@ -124,7 +124,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
-  HashPassword: 'HashPassword',
+  hashPassword: 'hashPassword',
   name: 'name',
   role: 'role',
   createdAt: 'createdAt',
@@ -144,8 +144,53 @@ exports.Prisma.ProfileScalarFieldEnum = {
   experience: 'experience',
   education: 'education',
   location: 'location',
-  avatar_url: 'avatar_url',
-  created_at: 'created_at',
+  avatarUrl: 'avatarUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CompanyScalarFieldEnum = {
+  company_id: 'company_id',
+  name: 'name',
+  description: 'description',
+  website: 'website',
+  logoUrl: 'logoUrl',
+  industry: 'industry',
+  size: 'size',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.JobScalarFieldEnum = {
+  job_id: 'job_id',
+  recruiter_id: 'recruiter_id',
+  company_id: 'company_id',
+  company_name: 'company_name',
+  job_title: 'job_title',
+  description: 'description',
+  requirements: 'requirements',
+  responsibilities: 'responsibilities',
+  employment_type: 'employment_type',
+  experience_level: 'experience_level',
+  salary_min: 'salary_min',
+  salary_max: 'salary_max',
+  location: 'location',
+  is_remote: 'is_remote',
+  skills_required: 'skills_required',
+  status: 'status',
+  expires_at: 'expires_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ApplicationScalarFieldEnum = {
+  application_id: 'application_id',
+  job_id: 'job_id',
+  candidate_id: 'candidate_id',
+  resume_url: 'resume_url',
+  cover_letter: 'cover_letter',
+  status: 'status',
+  applied_at: 'applied_at',
   updated_at: 'updated_at'
 };
 
@@ -154,15 +199,15 @@ exports.Prisma.PostScalarFieldEnum = {
   user_id: 'user_id',
   content: 'content',
   image_url: 'image_url',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PostLikeScalarFieldEnum = {
   like_id: 'like_id',
   post_id: 'post_id',
   user_id: 'user_id',
-  created_at: 'created_at'
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.CommentScalarFieldEnum = {
@@ -170,8 +215,8 @@ exports.Prisma.CommentScalarFieldEnum = {
   post_id: 'post_id',
   user_id: 'user_id',
   content: 'content',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -191,9 +236,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
   email: 'email',
-  HashPassword: 'HashPassword',
+  hashPassword: 'hashPassword',
   name: 'name',
-  role: 'role',
   otp: 'otp'
 };
 
@@ -214,7 +258,32 @@ exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
   experience: 'experience',
   education: 'education',
   location: 'location',
-  avatar_url: 'avatar_url'
+  avatarUrl: 'avatarUrl'
+};
+
+exports.Prisma.CompanyOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  website: 'website',
+  logoUrl: 'logoUrl',
+  industry: 'industry',
+  size: 'size'
+};
+
+exports.Prisma.JobOrderByRelevanceFieldEnum = {
+  company_name: 'company_name',
+  job_title: 'job_title',
+  description: 'description',
+  requirements: 'requirements',
+  responsibilities: 'responsibilities',
+  employment_type: 'employment_type',
+  experience_level: 'experience_level',
+  location: 'location'
+};
+
+exports.Prisma.ApplicationOrderByRelevanceFieldEnum = {
+  resume_url: 'resume_url',
+  cover_letter: 'cover_letter'
 };
 
 exports.Prisma.PostOrderByRelevanceFieldEnum = {
@@ -225,11 +294,32 @@ exports.Prisma.PostOrderByRelevanceFieldEnum = {
 exports.Prisma.CommentOrderByRelevanceFieldEnum = {
   content: 'content'
 };
+exports.Role = exports.$Enums.Role = {
+  ADMIN: 'ADMIN',
+  RECRUITER: 'RECRUITER',
+  CANDIDATE: 'CANDIDATE'
+};
 
+exports.JobStatus = exports.$Enums.JobStatus = {
+  ACTIVE: 'ACTIVE',
+  CLOSED: 'CLOSED',
+  DRAFT: 'DRAFT'
+};
+
+exports.ApplicationStatus = exports.$Enums.ApplicationStatus = {
+  PENDING: 'PENDING',
+  REVIEWED: 'REVIEWED',
+  SHORTLISTED: 'SHORTLISTED',
+  REJECTED: 'REJECTED',
+  ACCEPTED: 'ACCEPTED'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
   Profile: 'Profile',
+  Company: 'Company',
+  Job: 'Job',
+  Application: 'Application',
   Post: 'Post',
   PostLike: 'PostLike',
   Comment: 'Comment'

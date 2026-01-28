@@ -2,8 +2,6 @@ package com.jobconnect.profile.controller;
 
 
 import java.util.List;
-
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,15 +57,12 @@ public class ProfileController {
 		return ResponseEntity.ok(profile);
 	}
 	
-	//Get all profiles by pagination
+	//Get all profiles 
 	@GetMapping
-	public ResponseEntity<Page<Profile>> getAllProfiles(
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size
-			){
-		Page<Profile> profiles = service.getAllProfiles(page,size);
-		return ResponseEntity.ok(profiles);		
-	}
+	public ResponseEntity<List<Profile>> getAllProfiles() {
+    List<Profile> profiles = service.getAllProfiles();
+    return ResponseEntity.ok(profiles);
+}
 	
 	//Update Complete Profile
 	@PutMapping("/{id}")

@@ -1,10 +1,6 @@
 package com.jobconnect.profile.service;
 
 import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.jobconnect.profile.dto.AvatarDTO;
@@ -115,11 +111,9 @@ public class ProfileServiceImpl implements ProfileService {
 
 
 	@Override
-	public Page<Profile> getAllProfiles(int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-        return profilerepo.findAll(pageable);
-		
-	}
+	public List<Profile> getAllProfiles() {
+    return profilerepo.findAll();
+}
 
 
 
@@ -154,8 +148,8 @@ public class ProfileServiceImpl implements ProfileService {
 	    if (!profilerepo.existsById(id)) {
 	        throw new ProfileNotFoundException("Profile not found with id: " + id);
 	    }
-	    // Use the built-in method from JpaRepository
-	    profilerepo.deleteById(id);  // ✅ This method already exists
+	    
+	    profilerepo.deleteById(id); 
 	}
 
 

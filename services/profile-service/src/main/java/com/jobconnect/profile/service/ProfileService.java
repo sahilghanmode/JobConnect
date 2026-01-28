@@ -2,8 +2,6 @@ package com.jobconnect.profile.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-
 import com.jobconnect.profile.dto.AvatarDTO;
 import com.jobconnect.profile.dto.BioDTO;
 import com.jobconnect.profile.dto.EducationAddDTO;
@@ -21,7 +19,7 @@ public interface ProfileService {
 	
 	public Profile getProfileByUserId(Long UserId);
 	
-	public Page<Profile> getAllProfiles(int page, int size);
+	public List<Profile> getAllProfiles();
 	
 	public Profile updateProfile(Long id, ProfileUpdateDTO dto);
 

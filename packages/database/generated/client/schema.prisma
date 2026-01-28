@@ -10,95 +10,186 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  RECRUITER
+  CANDIDATE
+}
+
+enum JobStatus {
+  ACTIVE
+  CLOSED
+  DRAFT
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  SHORTLISTED
+  REJECTED
+  ACCEPTED
+}
+
 model User {
-  id           BigInt   @id @default(autoincrement())
-  email        String   @unique
-  HashPassword String   @map("hash_password")
+  id           BigInt  @id @default(autoincrement())
+  email        String  @unique
+  hashPassword String  @map("hash_password")
   name         String?
-  role         String   @default("CANDIDATE")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  role         Role    @default(CANDIDATE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   otp          String?   @db.VarChar(10)
   otpExpiresAt DateTime? @map("otp_expires_at")
   isVerified   Boolean   @default(false) @map("is_verified")
   otpAttempts  Int       @default(0) @map("otp_attempts")
 
-  Profile   Profile?
-  Posts     Post[]
-  PostLikes PostLike[]
-  Comments  Comment[]
+  profile       Profile?
+  posts         Post[]
+  postLikes     PostLike[]
+  comments      Comment[]
+  recruiterJobs Job[]
+  applications  Application[]
 
   @@map("users")
 }
 
 model Profile {
-  id         BigInt   @id @default(autoincrement())
-  user_id    BigInt   @unique
+  id         BigInt  @id @default(autoincrement())
+  user_id    BigInt  @unique
   headline   String?
-  bio        String?  @db.Text
+  bio        String? @db.Text
   skills     Json?
-  experience String?  @db.Text
-  education  String?  @db.Text
+  experience String? @db.Text
+  education  String? @db.Text
   location   String?
-  avatar_url String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  avatarUrl  String? @map("avatar_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("profiles")
 }
 
-model Post {
-  post_id    BigInt   @id @default(autoincrement())
-  user_id    BigInt
-  content    String   @db.Text
-  image_url  String?  @db.VarChar(500)
-  created_at DateTime @default(now())
+model Company {
+  company_id  BigInt  @id @default(autoincrement())
+  name        String  @db.VarChar(255)
+  description String? @db.Text
+  website     String?
+  logoUrl     String? @map("logo_url")
+  industry    String?
+  size        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  jobs Job[]
+
+  @@map("companies")
+}
+
+model Job {
+  job_id       BigInt @id @default(autoincrement())
+  recruiter_id BigInt
+  company_id   BigInt
+
+  company_name     String  @db.VarChar(255)
+  job_title        String  @db.VarChar(255)
+  description      String  @db.Text
+  requirements     String  @db.Text
+  responsibilities String? @db.Text
+
+  employment_type  String @db.VarChar(255)
+  experience_level String @db.VarChar(255)
+
+  salary_min Decimal? @db.Decimal(10, 2)
+  salary_max Decimal? @db.Decimal(10, 2)
+
+  location  String? @db.VarChar(255)
+  is_remote Boolean @default(false)
+
+  skills_required Json?
+  status          JobStatus @default(ACTIVE)
+  expires_at      DateTime?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  recruiter    User          @relation(fields: [recruiter_id], references: [id], onDelete: Cascade)
+  company      Company       @relation(fields: [company_id], references: [company_id])
+  applications Application[]
+
+  @@index([recruiter_id])
+  @@index([company_id])
+  @@index([status])
+  @@map("jobs")
+}
+
+model Application {
+  application_id BigInt @id @default(autoincrement())
+  job_id         BigInt
+  candidate_id   BigInt
+
+  resume_url   String?
+  cover_letter String?           @db.Text
+  status       ApplicationStatus @default(PENDING)
+
+  applied_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  job       Job  @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+  candidate User @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@unique([job_id, candidate_id])
+  @@index([status])
+  @@map("applications")
+}
+
+model Post {
+  post_id   BigInt  @id @default(autoincrement())
+  user_id   BigInt
+  content   String  @db.Text
+  image_url String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user     User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   likes    PostLike[]
   comments Comment[]
 
   @@index([user_id])
-  @@index([created_at])
   @@map("posts")
 }
 
 model PostLike {
-  like_id    BigInt   @id @default(autoincrement())
-  post_id    BigInt
-  user_id    BigInt
-  created_at DateTime @default(now())
+  like_id BigInt @id @default(autoincrement())
+  post_id BigInt
+  user_id BigInt
+
+  createdAt DateTime @default(now()) @map("created_at")
 
   post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([post_id, user_id])
-  @@index([post_id])
   @@map("post_likes")
 }
 
 model Comment {
-  comment_id BigInt   @id @default(autoincrement())
+  comment_id BigInt @id @default(autoincrement())
   post_id    BigInt
   user_id    BigInt
-  content    String   @db.Text
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  content    String @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([post_id])
-  @@index([user_id])
   @@map("comments")
-}
-
-enum Role {
-  ADMIN
-  RECRUITER
-  CANDIDATE
 }

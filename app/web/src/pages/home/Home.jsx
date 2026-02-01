@@ -1,8 +1,6 @@
-import React from 'react'
 import { Box, Button } from '@mui/material'
 import { Navbar } from '../../components/layout/Navbar';
 import { ProfileSidebar } from '../../components/layout/ProfileSidebar';
-import { ConnectionsSidebar } from '../../components/sidebar/ConnectionsSidebar';
 import { AnimatedBackground } from '../../components/background/AnimatedBackground';
 import { CreatePost } from '../../components/feed/CreatePost';
 import { PostCard } from '../../components/feed/PostCard';
@@ -81,9 +79,9 @@ const Home = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            style={{ flex: 1, width: 900 }}
+                            style={{ flex: 1, minWidth: 0 }}
                         >
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, maxWidth: 800, mx: "auto", width: "100%" }}>
                                 <CreatePost/>
 
                                 {posts.map((post, index) => (
@@ -117,9 +115,9 @@ const Home = () => {
                             </Box>
                         </motion.div>
 
-                        <Box sx={{ display: { xs: "none", lg: "block" } }}>
+                        {/* <Box sx={{ display: { xs: "none", lg: "block" } }}>
                             <ConnectionsSidebar />
-                        </Box>
+                        </Box> */}
 
                     </Box>
                 </Box>

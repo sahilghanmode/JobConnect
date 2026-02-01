@@ -47,7 +47,7 @@ export const Navbar = () => {
       <AppBar position="fixed" color="default">
         <Toolbar sx={{ justifyContent: "space-between", px: { xs: 2, md: 4 } }}>
           {/* Logo */}
-          <motion.div whileHover={{ scale: 1.02 }}>
+          {/* <motion.div whileHover={{ scale: 1.02 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Box
                 sx={{
@@ -85,7 +85,7 @@ export const Navbar = () => {
                 Nexus
               </Box>
             </Box>
-          </motion.div>
+          </motion.div> */}
 
           {/* Search */}
           <Box sx={{ display: { xs: "none", md: "flex" } }}>

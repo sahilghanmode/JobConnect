@@ -137,7 +137,7 @@ exports.Prisma.UserScalarFieldEnum = {
 
 exports.Prisma.ProfileScalarFieldEnum = {
   id: 'id',
-  user_id: 'user_id',
+  userId: 'userId',
   headline: 'headline',
   bio: 'bio',
   skills: 'skills',
@@ -241,20 +241,10 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   otp: 'otp'
 };
 
-exports.Prisma.JsonNullValueFilter = {
-  DbNull: Prisma.DbNull,
-  JsonNull: Prisma.JsonNull,
-  AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-};
-
 exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
   headline: 'headline',
   bio: 'bio',
+  skills: 'skills',
   experience: 'experience',
   education: 'education',
   location: 'location',
@@ -268,6 +258,17 @@ exports.Prisma.CompanyOrderByRelevanceFieldEnum = {
   logoUrl: 'logoUrl',
   industry: 'industry',
   size: 'size'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
 };
 
 exports.Prisma.JobOrderByRelevanceFieldEnum = {

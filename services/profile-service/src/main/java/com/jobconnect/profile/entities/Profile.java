@@ -28,7 +28,7 @@ public class Profile {
     @Column(columnDefinition = "TEXT")
     private String bio;
     
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String skills;
     
     @Column(columnDefinition = "TEXT")

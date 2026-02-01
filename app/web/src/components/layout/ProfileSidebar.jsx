@@ -16,6 +16,7 @@ import {
   EmojiEvents,
   TrendingUp,
 } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 
 const stats = [
   { label: "Profile Views", value: "2,847", change: "+12%" },
@@ -26,6 +27,38 @@ const stats = [
 const skills = ["React", "TypeScript", "Node.js", "Python", "AWS"];
 
 export const ProfileSidebar = () => {
+
+  const { user, userProfile } = useSelector((state) => state.auth);
+
+  if (!user || !userProfile) return null;
+
+  const city = userProfile.location?.split(",")[0];
+  console.log(city)
+
+  const skills = userProfile.skills
+    ? userProfile.skills.split(",").map((s) => s.trim())
+    : [];
+
+  let experiences = [];
+
+  try {
+    experiences = userProfile?.experience
+      ? JSON.parse(userProfile.experience)
+      : [];
+  } catch (e) {
+    console.error("Failed to parse experience", e);
+  }
+
+  const currentExperience =
+    experiences.find((exp) =>
+      exp.duration?.toLowerCase().includes("present")
+    ) || experiences[0];
+
+  const currentCompany = currentExperience?.company;
+    console.log(currentCompany)
+
+  console.log(user, userProfile)
+
   return (
     <motion.aside
       initial={{ opacity: 0, x: -50 }}
@@ -59,8 +92,10 @@ export const ProfileSidebar = () => {
                   fontWeight: 700,
                   boxShadow: 2,
                 }}
+
+                src={userProfile.avatarUrl || undefined}
               >
-                JD
+                {user?.name?.charAt(0).toUpperCase()}
               </Avatar>
             </motion.div>
           </Box>
@@ -70,35 +105,35 @@ export const ProfileSidebar = () => {
               variant="h6"
               sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
             >
-              John Doe
+              {user.name}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Senior Software Engineer | Building the future of web
+              {userProfile.headline}
             </Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1.5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <LocationOn sx={{ fontSize: 14, color: "text.secondary" }} />
                 <Typography variant="caption" color="text.secondary">
-                  San Francisco
+                  {city}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <Business sx={{ fontSize: 14, color: "text.secondary" }} />
                 <Typography variant="caption" color="text.secondary">
-                  TechCorp
+                  {currentCompany || "N/A"}
                 </Typography>
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5 }}>
+            {/* <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5 }}>
               <Typography variant="body2" fontWeight={600} color="primary.main">
                 500+
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 connections
               </Typography>
-            </Box>
+            </Box> */}
 
             <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
               <Button variant="contained" fullWidth>
@@ -112,67 +147,6 @@ export const ProfileSidebar = () => {
             </Box>
           </CardContent>
         </Card>
-
-        {/* Stats Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Card>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <TrendingUp sx={{ fontSize: 18, color: "primary.main" }} />
-                <Typography
-                  variant="subtitle2"
-                  sx={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                  Your Analytics
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                {stats.map((stat, index) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    whileHover={{ x: 4 }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 1.5,
-                        borderRadius: 2,
-                        cursor: "pointer",
-                        "&:hover": { bgcolor: "action.hover" },
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        {stat.label}
-                      </Typography>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Typography variant="body2" fontWeight={600}>
-                          {stat.value}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="primary.main"
-                          fontWeight={500}
-                        >
-                          {stat.change}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </motion.div>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        </motion.div>
 
         {/* Skills Card */}
         <motion.div

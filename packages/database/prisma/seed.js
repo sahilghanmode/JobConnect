@@ -14,11 +14,11 @@ async function main() {
     prisma.user.create({
       data: {
         email: 'john.doe@example.com',
-        HashPassword: hashedPassword,
+        hashPassword: hashedPassword,
         name: 'John Doe',
         role: 'CANDIDATE',
         isVerified: true,
-        Profile: {
+        profile: {
           create: {
             headline: 'Full Stack Developer | React & Node.js',
             bio: 'Passionate developer with 5 years of experience building scalable web applications.',
@@ -26,7 +26,7 @@ async function main() {
             experience: 'Senior Developer at Tech Corp (2020-Present)\nJunior Developer at StartupXYZ (2018-2020)',
             education: 'BS in Computer Science, MIT (2014-2018)',
             location: 'San Francisco, CA',
-            avatar_url: 'https://i.pravatar.cc/150?img=12'
+            avatarUrl: 'https://i.pravatar.cc/150?img=12'
           }
         }
       }
@@ -34,17 +34,17 @@ async function main() {
     prisma.user.create({
       data: {
         email: 'jane.smith@example.com',
-        HashPassword: hashedPassword,
+        hashPassword: hashedPassword,
         name: 'Jane Smith',
         role: 'RECRUITER',
         isVerified: true,
-        Profile: {
+        profile: {
           create: {
             headline: 'Technical Recruiter | Connecting Top Talent',
             bio: 'Helping companies find amazing developers and helping developers find their dream jobs.',
             skills: JSON.stringify(['Talent Acquisition', 'Technical Screening', 'Networking']),
             location: 'New York, NY',
-            avatar_url: 'https://i.pravatar.cc/150?img=5'
+            avatarUrl: 'https://i.pravatar.cc/150?img=5'
           }
         }
       }
@@ -52,11 +52,11 @@ async function main() {
     prisma.user.create({
       data: {
         email: 'mike.wilson@example.com',
-        HashPassword: hashedPassword,
+        hashPassword: hashedPassword,
         name: 'Mike Wilson',
         role: 'CANDIDATE',
         isVerified: true,
-        Profile: {
+        profile: {
           create: {
             headline: 'Software Engineer | Python & AI Enthusiast',
             bio: 'Building intelligent systems and exploring machine learning applications.',
@@ -64,7 +64,7 @@ async function main() {
             experience: 'ML Engineer at AI Innovations (2021-Present)',
             education: 'MS in Computer Science, Stanford (2019-2021)',
             location: 'Seattle, WA',
-            avatar_url: 'https://i.pravatar.cc/150?img=33'
+            avatarUrl: 'https://i.pravatar.cc/150?img=33'
           }
         }
       }
@@ -72,11 +72,11 @@ async function main() {
     prisma.user.create({
       data: {
         email: 'sarah.jones@example.com',
-        HashPassword: hashedPassword,
+        hashPassword: hashedPassword,
         name: 'Sarah Jones',
         role: 'CANDIDATE',
         isVerified: true,
-        Profile: {
+        profile: {
           create: {
             headline: 'UI/UX Designer | Creating Beautiful Experiences',
             bio: 'Designer focused on user-centered design and accessibility.',
@@ -84,7 +84,7 @@ async function main() {
             experience: 'Senior Designer at DesignHub (2019-Present)',
             education: 'BFA in Graphic Design, RISD (2015-2019)',
             location: 'Austin, TX',
-            avatar_url: 'https://i.pravatar.cc/150?img=9'
+            avatarUrl: 'https://i.pravatar.cc/150?img=9'
           }
         }
       }
@@ -92,11 +92,11 @@ async function main() {
     prisma.user.create({
       data: {
         email: 'david.brown@example.com',
-        HashPassword: hashedPassword,
+        hashPassword: hashedPassword,
         name: 'David Brown',
         role: 'CANDIDATE',
         isVerified: true,
-        Profile: {
+        profile: {
           create: {
             headline: 'DevOps Engineer | Cloud Architecture Specialist',
             bio: 'Expert in AWS, Docker, and Kubernetes. Building reliable and scalable infrastructure.',
@@ -104,7 +104,7 @@ async function main() {
             experience: 'DevOps Lead at CloudTech (2019-Present)',
             education: 'BS in Information Technology, UC Berkeley (2015-2019)',
             location: 'Los Angeles, CA',
-            avatar_url: 'https://i.pravatar.cc/150?img=51'
+            avatarUrl: 'https://i.pravatar.cc/150?img=51'
           }
         }
       }
@@ -112,16 +112,16 @@ async function main() {
     prisma.user.create({
       data: {
         email: 'admin@example.com',
-        HashPassword: hashedPassword,
+        hashPassword: hashedPassword,
         name: 'Admin User',
         role: 'ADMIN',
         isVerified: true,
-        Profile: {
+        profile: {
           create: {
             headline: 'Platform Administrator',
             bio: 'Managing and maintaining the JobConnect platform.',
             location: 'Remote',
-            avatar_url: 'https://i.pravatar.cc/150?img=68'
+            avatarUrl: 'https://i.pravatar.cc/150?img=68'
           }
         }
       }

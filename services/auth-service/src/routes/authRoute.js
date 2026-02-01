@@ -5,8 +5,8 @@ const  authRoute= Router();
 
 
 authRoute.post("/signup",signupController)
-authRoute.get("/resend-otp",resendOtpController)
-authRoute.get("/verify-otp",verifyOtpController)
+authRoute.post("/resend-otp",resendOtpController)
+authRoute.post("/verify-otp",verifyOtpController)
 
 authRoute.post("/login",loginController)
 authRoute.post("/forgot-password",forgotPasswordController)

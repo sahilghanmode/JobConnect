@@ -29,9 +29,9 @@ export const CreatePost = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card>
+      <Card sx={{width:"100%",maxWidth:800,mx:"auto"}}>
         <CardContent sx={{ p: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2}}>
             <motion.div whileHover={{ scale: 1.03 }}>
               <Avatar
                 sx={{

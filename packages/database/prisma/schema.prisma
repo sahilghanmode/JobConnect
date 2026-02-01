@@ -1,5 +1,3 @@
-// This is your Prisma schema file
-
 generator client {
   provider = "prisma-client-js"
   output   = "./../generated/client"
@@ -8,6 +6,152 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id            BigInt        @id @default(autoincrement())
+  email         String        @unique
+  hashPassword  String        @map("hash_password")
+  name          String?
+  role          Role          @default(CANDIDATE)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  otp           String?       @db.VarChar(10)
+  otpExpiresAt  DateTime?     @map("otp_expires_at")
+  isVerified    Boolean       @default(false) @map("is_verified")
+  otpAttempts   Int           @default(0) @map("otp_attempts")
+  applications  Application[]
+  comments      Comment[]
+  recruiterJobs Job[]
+  postLikes     PostLike[]
+  posts         Post[]
+  profile       Profile?
+
+  @@map("users")
+}
+
+model Profile {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt   @unique @map("user_id")
+  headline   String?  @db.VarChar(255)
+  bio        String?  @db.Text
+  skills     String?  @db.Text
+  experience String?  @db.Text
+  education  String?  @db.Text
+  location   String?  @db.VarChar(255)
+  avatarUrl  String?  @map("avatar_url") @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Company {
+  company_id  BigInt   @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  website     String?
+  logoUrl     String?  @map("logo_url")
+  industry    String?
+  size        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  jobs        Job[]
+
+  @@map("companies")
+}
+
+model Job {
+  job_id           BigInt        @id @default(autoincrement())
+  recruiter_id     BigInt
+  company_id       BigInt
+  company_name     String        @db.VarChar(255)
+  job_title        String        @db.VarChar(255)
+  description      String        @db.Text
+  requirements     String        @db.Text
+  responsibilities String?       @db.Text
+  employment_type  String        @db.VarChar(255)
+  experience_level String        @db.VarChar(255)
+  salary_min       Decimal?      @db.Decimal(10, 2)
+  salary_max       Decimal?      @db.Decimal(10, 2)
+  location         String?       @db.VarChar(255)
+  is_remote        Boolean       @default(false)
+  skills_required  Json?
+  status           JobStatus     @default(ACTIVE)
+  expires_at       DateTime?
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  applications     Application[]
+  company          Company       @relation(fields: [company_id], references: [company_id])
+  recruiter        User          @relation(fields: [recruiter_id], references: [id], onDelete: Cascade)
+
+  @@index([recruiter_id])
+  @@index([company_id])
+  @@index([status])
+  @@map("jobs")
+}
+
+model Application {
+  application_id BigInt            @id @default(autoincrement())
+  job_id         BigInt
+  candidate_id   BigInt
+  resume_url     String?
+  cover_letter   String?           @db.Text
+  status         ApplicationStatus @default(PENDING)
+  applied_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
+  candidate      User              @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+  job            Job               @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
+
+  @@unique([job_id, candidate_id])
+  @@index([status])
+  @@index([candidate_id], map: "applications_candidate_id_fkey")
+  @@map("applications")
+}
+
+model Post {
+  post_id   BigInt     @id @default(autoincrement())
+  user_id   BigInt
+  content   String     @db.Text
+  image_url String?
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  comments  Comment[]
+  likes     PostLike[]
+  user      User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("posts")
+}
+
+model PostLike {
+  like_id   BigInt   @id @default(autoincrement())
+  post_id   BigInt
+  user_id   BigInt
+  createdAt DateTime @default(now()) @map("created_at")
+  post      Post     @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([post_id, user_id])
+  @@index([post_id])
+  @@index([user_id], map: "post_likes_user_id_fkey")
+  @@map("post_likes")
+}
+
+model Comment {
+  comment_id BigInt   @id @default(autoincrement())
+  post_id    BigInt
+  user_id    BigInt
+  content    String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  post       Post     @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([post_id])
+  @@index([user_id])
+  @@map("comments")
 }
 
 enum Role {
@@ -28,168 +172,4 @@ enum ApplicationStatus {
   SHORTLISTED
   REJECTED
   ACCEPTED
-}
-
-model User {
-  id           BigInt   @id @default(autoincrement())
-  email        String   @unique
-  hashPassword String   @map("hash_password")
-  name         String?
-  role         Role     @default(CANDIDATE)
-
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  otp          String?  @db.VarChar(10)
-  otpExpiresAt DateTime? @map("otp_expires_at")
-  isVerified   Boolean @default(false) @map("is_verified")
-  otpAttempts  Int     @default(0) @map("otp_attempts")
-
-  profile       Profile?
-  posts         Post[]
-  postLikes     PostLike[]
-  comments      Comment[]
-  recruiterJobs Job[]
-  applications  Application[]
-
-  @@map("users")
-}
-
-model Profile {
-  id        BigInt   @id @default(autoincrement())
-  user_id   BigInt   @unique
-  headline  String?
-  bio       String?  @db.Text
-  skills    Json?
-  experience String? @db.Text
-  education  String? @db.Text
-  location   String?
-  avatarUrl  String? @map("avatar_url")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@map("profiles")
-}
-
-model Company {
-  company_id BigInt   @id @default(autoincrement())
-  name       String   @db.VarChar(255)
-  description String? @db.Text
-  website    String?
-  logoUrl    String?  @map("logo_url")
-  industry   String?
-  size       String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  jobs Job[]
-
-  @@map("companies")
-}
-
-model Job {
-  job_id       BigInt   @id @default(autoincrement())
-  recruiter_id BigInt
-  company_id   BigInt
-
-  company_name String @db.VarChar(255)
-  job_title    String @db.VarChar(255)
-  description  String @db.Text
-  requirements String @db.Text
-  responsibilities String? @db.Text
-
-  employment_type String @db.VarChar(255)
-  experience_level String @db.VarChar(255)
-
-  salary_min Decimal? @db.Decimal(10,2)
-  salary_max Decimal? @db.Decimal(10,2)
-
-  location  String? @db.VarChar(255)
-  is_remote Boolean @default(false)
-
-  skills_required Json?
-  status JobStatus @default(ACTIVE)
-  expires_at DateTime?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  recruiter User    @relation(fields: [recruiter_id], references: [id], onDelete: Cascade)
-  company   Company @relation(fields: [company_id], references: [company_id])
-  applications Application[]
-
-  @@index([recruiter_id])
-  @@index([company_id])
-  @@index([status])
-  @@map("jobs")
-}
-
-model Application {
-  application_id BigInt @id @default(autoincrement())
-  job_id       BigInt
-  candidate_id BigInt
-
-  resume_url   String?
-  cover_letter String? @db.Text
-  status       ApplicationStatus @default(PENDING)
-
-  applied_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  job       Job  @relation(fields: [job_id], references: [job_id], onDelete: Cascade)
-  candidate User @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
-
-  @@unique([job_id, candidate_id])
-  @@index([status])
-  @@map("applications")
-}
-
-model Post {
-  post_id BigInt @id @default(autoincrement())
-  user_id BigInt
-  content String @db.Text
-  image_url String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  likes PostLike[]
-  comments Comment[]
-
-  @@index([user_id])
-  @@map("posts")
-}
-
-model PostLike {
-  like_id BigInt @id @default(autoincrement())
-  post_id BigInt
-  user_id BigInt
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@unique([post_id, user_id])
-  @@map("post_likes")
-}
-
-model Comment {
-  comment_id BigInt @id @default(autoincrement())
-  post_id BigInt
-  user_id BigInt
-  content String @db.Text
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  post Post @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@map("comments")
 }

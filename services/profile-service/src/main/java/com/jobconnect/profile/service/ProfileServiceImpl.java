@@ -1,6 +1,8 @@
 package com.jobconnect.profile.service;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.jobconnect.profile.dto.AvatarDTO;
@@ -27,9 +29,15 @@ public class ProfileServiceImpl implements ProfileService {
 	
 	@Override
 	public Profile addProfile(Profile profile) {
-		
-		return profilerepo.save(profile);
-	}
+        // Check if profile already exists for this user
+        Optional<Profile> existing = profilerepo.getProfileByUserId(profile.getUserId());
+        if (existing.isPresent()) {
+            throw new IllegalStateException("Profile already exists for this user");
+        }
+        
+        System.out.println("Creating profile: " + profile);
+        return profilerepo.save(profile);
+    }
 
 
 

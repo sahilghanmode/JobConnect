@@ -1,9 +1,13 @@
 package com.jobconnect.profile.controller;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,6 +25,7 @@ import com.jobconnect.profile.dto.EducationAddDTO;
 import com.jobconnect.profile.dto.ExperienceAddDTO;
 import com.jobconnect.profile.dto.HeadlineDTO;
 import com.jobconnect.profile.dto.LocationDTO;
+import com.jobconnect.profile.dto.ProfileAddDTO;
 import com.jobconnect.profile.dto.ProfileUpdateDTO;
 import com.jobconnect.profile.dto.SkillAddDTO;
 import com.jobconnect.profile.entities.Profile;
@@ -28,6 +33,7 @@ import com.jobconnect.profile.service.ProfileService;
 
 import lombok.AllArgsConstructor;
 
+@CrossOrigin(origins = "*")
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/profile")
@@ -36,11 +42,52 @@ public class ProfileController {
 
 	//Add Profile
 	@PostMapping("/addprofile")
-	public ResponseEntity<Profile> createProfile(@RequestBody Profile profile){
-		System.out.println("working");
-		Profile created= service.addProfile(profile);
-		return ResponseEntity.status(HttpStatus.CREATED).body(created);
-	}
+    public ResponseEntity<?> addProfile(@RequestBody ProfileAddDTO dto) {
+        try {
+            // Validate required fields
+            if (dto.getUserId() == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("msg", "User ID is required"));
+            }
+            
+            if (dto.getHeadline() == null || dto.getHeadline().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("msg", "Headline is required"));
+            }
+            
+            if (dto.getBio() == null || dto.getBio().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("msg", "Bio is required"));
+            }
+            
+            // Convert DTO to Entity
+            Profile profile = new Profile();
+            profile.setUserId(dto.getUserId());
+            profile.setHeadline(dto.getHeadline());
+            profile.setBio(dto.getBio());
+            profile.setSkills(dto.getSkills());
+            profile.setExperience(dto.getExperience());
+            profile.setEducation(dto.getEducation());
+            profile.setLocation(dto.getLocation());
+            profile.setAvatarUrl(dto.getAvatarUrl());
+            
+            Profile savedProfile = service.addProfile(profile);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("msg", "Profile created successfully");
+            response.put("profile", savedProfile);
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("msg", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("msg", "Failed to create profile: " + e.getMessage()));
+        }
+    }
 	
 
 	//Get Profile

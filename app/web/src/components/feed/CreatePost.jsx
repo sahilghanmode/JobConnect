@@ -1,121 +1,145 @@
-import { motion } from "framer-motion";
-import {
-  Card,
-  CardContent,
-  Box,
-  Avatar,
-  Button,
-  IconButton,
-} from "@mui/material";
-import {
-  Image,
-  VideoCall,
-  Article,
-  Event,
-  AutoAwesome,
-} from "@mui/icons-material";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Box, Paper, Avatar, TextField, Button, Typography, IconButton } from "@mui/material";
+import { Image, Send, Close } from "@mui/icons-material";
+import { createPost } from "../../store/slices/feedSlice";
+import feedInstance from "../../lib/feedInstance";
 
-const actions = [
-  { icon: Image, label: "Photo", color: "primary.main" },
-  { icon: VideoCall, label: "Video", color: "warning.main" },
-  { icon: Article, label: "Article", color: "text.secondary" },
-  { icon: Event, label: "Event", color: "secondary.dark" },
-];
+const CreatePost = () => {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const [content, setContent] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [showImageInput, setShowImageInput] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
-export const CreatePost = () => {
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      // Create preview URL
+      const preview = URL.createObjectURL(file);
+      setImageUrl(preview);
+      setShowImageInput(true);
+      setUploadError(null);
+    }
+  };
+
+  const clearImage = () => {
+    setImageUrl("");
+    setSelectedFile(null);
+    setShowImageInput(false);
+    setUploadError(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!content.trim() && !selectedFile) return;
+
+    setLoading(true);
+    setUploadError(null);
+
+    let finalImageUrl = imageUrl;
+
+    try {
+      // proper upload if file selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        // Upload to backend
+        const uploadRes = await feedInstance.post("/api/feed/upload/image", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        finalImageUrl = uploadRes.data;
+      }
+
+      await dispatch(createPost({ content, imageUrl: finalImageUrl })).unwrap();
+
+      setContent("");
+      clearImage();
+    } catch (err) {
+      console.error("Upload/Post failed", err);
+      setUploadError("Failed to create post. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card sx={{width:"100%",maxWidth:800,mx:"auto"}}>
-        <CardContent sx={{ p: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2}}>
-            <motion.div whileHover={{ scale: 1.03 }}>
-              <Avatar
-                sx={{
-                  width: 48,
-                  height: 48,
-                  fontSize: 14,
-                }}
-              >
-                JD
-              </Avatar>
-            </motion.div>
+    <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <Avatar src={user?.profile?.avatarUrl}>
+          {(user?.name || "U")[0]}
+        </Avatar>
+        <Box sx={{ flexGrow: 1 }}>
+          <TextField
+            fullWidth
+            placeholder="Start a post, share your thoughts..."
+            multiline
+            rows={2}
+            variant="outlined"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            sx={{ mb: 1, bgcolor: "grey.50" }}
+          />
 
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              style={{
-                flex: 1,
-                textAlign: "left",
-                padding: "12px 16px",
-                borderRadius: 12,
-                background: "hsla(40, 20%, 92%, 0.5)",
-                border: "1px solid hsl(40, 20%, 88%)",
-                color: "hsl(30, 10%, 45%)",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                fontSize: 14,
-              }}
-            >
-              Share your thoughts...
-            </motion.button>
+          {/* Hidden File Input */}
+          <input
+            type="file"
+            accept="image/*"
+            id="image-upload"
+            style={{ display: "none" }}
+            onChange={handleFileSelect}
+          />
 
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
-            >
+          {showImageInput && imageUrl && (
+            <Box sx={{ position: "relative", mb: 2 }}>
+              <img
+                src={imageUrl}
+                alt="Preview"
+                style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "8px" }}
+              />
               <IconButton
-                sx={{
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                  "&:hover": { bgcolor: "primary.dark" },
-                }}
+                size="small"
+                onClick={clearImage}
+                sx={{ position: "absolute", top: 8, right: 8, bgcolor: "rgba(0,0,0,0.6)", color: "white", "&:hover": { bgcolor: "rgba(0,0,0,0.8)" } }}
               >
-                <AutoAwesome sx={{ fontSize: 18 }} />
+                <Close />
               </IconButton>
-            </motion.div>
-          </Box>
+            </Box>
+          )}
 
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              pt: 1.5,
-              borderTop: 1,
-              borderColor: "divider",
-            }}
-          >
-            {actions.map((action, index) => {
-              const Icon = action.icon;
-              return (
-                <motion.div
-                  key={action.label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    startIcon={<Icon sx={{ color: action.color }} />}
-                    sx={{
-                      color: "text.secondary",
-                      px: 2,
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    {action.label}
-                  </Button>
-                </motion.div>
-              );
-            })}
+          {uploadError && (
+            <Typography color="error" variant="caption" display="block" sx={{ mb: 1 }}>
+              {uploadError}
+            </Typography>
+          )}
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <label htmlFor="image-upload">
+              <IconButton
+                component="span"
+                color={showImageInput ? "primary" : "default"}
+              >
+                <Image />
+              </IconButton>
+            </label>
+            <Button
+              variant="contained"
+              size="small"
+              endIcon={<Send />}
+              onClick={handleSubmit}
+              disabled={(!content.trim() && !selectedFile) || loading}
+            >
+              {loading ? "Posting..." : "Post"}
+            </Button>
           </Box>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </Box>
+      </Box>
+    </Paper>
   );
 };
+
+export default CreatePost;

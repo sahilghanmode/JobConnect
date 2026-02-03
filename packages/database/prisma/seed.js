@@ -230,60 +230,60 @@ async function main() {
     prisma.postLike.create({ data: { post_id: posts[0].post_id, user_id: users[1].id } }),
     prisma.postLike.create({ data: { post_id: posts[0].post_id, user_id: users[2].id } }),
     prisma.postLike.create({ data: { post_id: posts[0].post_id, user_id: users[4].id } }),
-    
+
     // Post 2 likes (John's TypeScript post)
     prisma.postLike.create({ data: { post_id: posts[1].post_id, user_id: users[2].id } }),
     prisma.postLike.create({ data: { post_id: posts[1].post_id, user_id: users[3].id } }),
-    
+
     // Post 3 likes (John's testing post)
     prisma.postLike.create({ data: { post_id: posts[2].post_id, user_id: users[1].id } }),
     prisma.postLike.create({ data: { post_id: posts[2].post_id, user_id: users[4].id } }),
-    
+
     // Post 4 likes (Jane's hiring post)
     prisma.postLike.create({ data: { post_id: posts[3].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[3].post_id, user_id: users[2].id } }),
     prisma.postLike.create({ data: { post_id: posts[3].post_id, user_id: users[3].id } }),
-    
+
     // Post 5 likes (Jane's resume tip)
     prisma.postLike.create({ data: { post_id: posts[4].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[4].post_id, user_id: users[3].id } }),
-    
+
     // Post 6 likes (Mike's ML post)
     prisma.postLike.create({ data: { post_id: posts[5].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[5].post_id, user_id: users[1].id } }),
     prisma.postLike.create({ data: { post_id: posts[5].post_id, user_id: users[3].id } }),
     prisma.postLike.create({ data: { post_id: posts[5].post_id, user_id: users[4].id } }),
-    
+
     // Post 7 likes (Mike's Python tip)
     prisma.postLike.create({ data: { post_id: posts[6].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[6].post_id, user_id: users[4].id } }),
-    
+
     // Post 8 likes (Mike's data science post)
     prisma.postLike.create({ data: { post_id: posts[7].post_id, user_id: users[1].id } }),
     prisma.postLike.create({ data: { post_id: posts[7].post_id, user_id: users[3].id } }),
-    
+
     // Post 9 likes (Sarah's UX post)
     prisma.postLike.create({ data: { post_id: posts[8].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[8].post_id, user_id: users[1].id } }),
     prisma.postLike.create({ data: { post_id: posts[8].post_id, user_id: users[2].id } }),
-    
+
     // Post 10 likes (Sarah's design thinking)
     prisma.postLike.create({ data: { post_id: posts[9].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[9].post_id, user_id: users[2].id } }),
-    
+
     // Post 11 likes (Sarah's color theory)
     prisma.postLike.create({ data: { post_id: posts[10].post_id, user_id: users[2].id } }),
     prisma.postLike.create({ data: { post_id: posts[10].post_id, user_id: users[4].id } }),
-    
+
     // Post 12 likes (David's Kubernetes post)
     prisma.postLike.create({ data: { post_id: posts[11].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[11].post_id, user_id: users[1].id } }),
     prisma.postLike.create({ data: { post_id: posts[11].post_id, user_id: users[2].id } }),
-    
+
     // Post 13 likes (David's IaC post)
     prisma.postLike.create({ data: { post_id: posts[12].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[12].post_id, user_id: users[2].id } }),
-    
+
     // Post 14 likes (David's monitoring post)
     prisma.postLike.create({ data: { post_id: posts[13].post_id, user_id: users[0].id } }),
     prisma.postLike.create({ data: { post_id: posts[13].post_id, user_id: users[3].id } }),
@@ -308,7 +308,7 @@ async function main() {
         content: 'This is awesome! We\'re also using microservices. gRPC has been great for us for synchronous calls. Consider circuit breakers too!'
       }
     }),
-    
+
     // Comments on Post 2 (John's TypeScript post)
     prisma.comment.create({
       data: {
@@ -324,7 +324,7 @@ async function main() {
         content: 'Agreed! The autocompletion and refactoring capabilities are amazing. Have you tried using strict mode?'
       }
     }),
-    
+
     // Comments on Post 3 (John's testing post)
     prisma.comment.create({
       data: {
@@ -333,7 +333,7 @@ async function main() {
         content: 'Absolutely! TDD has saved me countless times. What testing framework do you prefer? I\'m using Jest.'
       }
     }),
-    
+
     // Comments on Post 4 (Jane's hiring post)
     prisma.comment.create({
       data: {
@@ -349,7 +349,7 @@ async function main() {
         content: 'This sounds great! Is the position fully remote or hybrid?'
       }
     }),
-    
+
     // Comments on Post 6 (Mike's ML post)
     prisma.comment.create({
       data: {
@@ -365,7 +365,7 @@ async function main() {
         content: 'Great work! Would love to hear more about your approach to data preprocessing and augmentation.'
       }
     }),
-    
+
     // Comments on Post 7 (Mike's Python tip)
     prisma.comment.create({
       data: {
@@ -374,7 +374,7 @@ async function main() {
         content: 'Love this! List comprehensions are so clean. Also check out generator expressions for memory efficiency with large datasets.'
       }
     }),
-    
+
     // Comments on Post 9 (Sarah's UX post)
     prisma.comment.create({
       data: {
@@ -390,7 +390,7 @@ async function main() {
         content: '40% improvement is huge! Would love to see a case study on this. Any specific metrics you focused on?'
       }
     }),
-    
+
     // Comments on Post 10 (Sarah's design thinking)
     prisma.comment.create({
       data: {
@@ -399,7 +399,7 @@ async function main() {
         content: 'Great reminder! The iterative part is so important. Many people forget it\'s not a one-time process.'
       }
     }),
-    
+
     // Comments on Post 12 (David's Kubernetes post)
     prisma.comment.create({
       data: {
@@ -415,7 +415,7 @@ async function main() {
         content: '50% improvement is fantastic! How did you handle the migration? Any downtime?'
       }
     }),
-    
+
     // Comments on Post 13 (David's IaC post)
     prisma.comment.create({
       data: {
@@ -425,6 +425,133 @@ async function main() {
       }
     }),
   ]);
+
+  // ---------------- COMPANIES ----------------
+  const companies = await Promise.all([
+    prisma.company.create({
+      data: {
+        name: "Spotify",
+        description: "Music streaming platform used by millions worldwide.",
+        website: "https://spotify.com",
+        industry: "Music / Streaming",
+        size: "1000+",
+        logoUrl: "https://logo.clearbit.com/spotify.com",
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: "Netflix",
+        description: "Video streaming and entertainment platform.",
+        website: "https://netflix.com",
+        industry: "Entertainment",
+        size: "5000+",
+        logoUrl: "https://logo.clearbit.com/netflix.com",
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: "Airbnb",
+        description: "Marketplace for lodging and travel experiences.",
+        website: "https://airbnb.com",
+        industry: "Travel",
+        size: "3000+",
+        logoUrl: "https://logo.clearbit.com/airbnb.com",
+      },
+    }),
+  ]);
+
+  console.log("✅ Created companies:", companies.length);
+
+  // ---------------- JOBS ----------------
+  const jobs = await Promise.all([
+    prisma.job.create({
+      data: {
+        recruiter_id: users[1].id, // Jane Smith (RECRUITER)
+        company_id: companies[0].company_id,
+        company_name: companies[0].name,
+        job_title: "Senior Frontend Developer",
+        description:
+          "Work on scalable frontend applications used by millions of users.",
+        requirements:
+          "5+ years experience with React, TypeScript, and modern frontend tooling.",
+        responsibilities:
+          "Build UI features, optimize performance, collaborate with backend teams.",
+        employment_type: "Full-time",
+        experience_level: "Senior",
+        salary_min: 120000,
+        salary_max: 160000,
+        location: "Remote",
+        is_remote: true,
+        skills_required: ["React", "TypeScript", "GraphQL"],
+        status: "ACTIVE",
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    }),
+
+    prisma.job.create({
+      data: {
+        recruiter_id: users[1].id,
+        company_id: companies[1].company_id,
+        company_name: companies[1].name,
+        job_title: "Backend Engineer",
+        description:
+          "Design and build high-scale backend systems for streaming services.",
+        requirements:
+          "Strong Java, Spring Boot, Microservices, and AWS experience.",
+        responsibilities:
+          "API design, database optimization, system scalability.",
+        employment_type: "Full-time",
+        experience_level: "Mid-Senior",
+        salary_min: 150000,
+        salary_max: 200000,
+        location: "Los Gatos, CA",
+        is_remote: false,
+        skills_required: ["Java", "Spring Boot", "Kafka", "AWS"],
+        status: "ACTIVE",
+        expires_at: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+      },
+    }),
+
+    prisma.job.create({
+      data: {
+        recruiter_id: users[1].id,
+        company_id: companies[2].company_id,
+        company_name: companies[2].name,
+        job_title: "Product Designer",
+        description:
+          "Create intuitive and delightful product experiences.",
+        requirements:
+          "Strong UX fundamentals, Figma expertise, user research experience.",
+        responsibilities:
+          "Design workflows, prototypes, collaborate with engineers.",
+        employment_type: "Full-time",
+        experience_level: "Mid",
+        salary_min: 100000,
+        salary_max: 140000,
+        location: "San Francisco, CA",
+        is_remote: false,
+        skills_required: ["Figma", "UX Research", "Prototyping"],
+        status: "ACTIVE",
+        expires_at: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+      },
+    }),
+  ]);
+
+  console.log("✅ Created jobs:", jobs.length);
+
+  // ---------------- APPLICATIONS ----------------
+  await prisma.application.create({
+    data: {
+      job_id: jobs[0].job_id,
+      candidate_id: users[0].id, // John Doe
+      resume_url: "https://example.com/resume-john.pdf",
+      cover_letter: "Excited to apply for this frontend role!",
+      status: "PENDING",
+    },
+  });
+
+  console.log("✅ Created job applications");
+
 
   console.log('✅ Created comments:', comments.length);
 

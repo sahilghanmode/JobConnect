@@ -1,253 +1,188 @@
-import { motion } from "framer-motion";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Card,
+  CardHeader,
   CardContent,
-  Box,
-  Typography,
+  CardActions,
   Avatar,
+  Typography,
   IconButton,
+  Box,
   Divider,
+  TextField,
   Button,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText
 } from "@mui/material";
 import {
-  FavoriteBorder,
-  Favorite,
-  ChatBubbleOutline,
-  Share,
-  BookmarkBorder,
-  Bookmark,
-  MoreHoriz,
+  ThumbUpOutlined,
+  ThumbUp,
+  CommentOutlined,
+  ShareOutlined,
+  MoreVert,
+  Send
 } from "@mui/icons-material";
+import { likePost, addComment, fetchComments } from "../../store/slices/feedSlice";
 
-export const PostCard = ({
-  author,
-  content,
-  image,
-  likes,
-  comments,
-  time,
-  index,
-}) => {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [likeCount, setLikeCount] = useState(likes);
+const PostCard = ({ post }) => {
+  const dispatch = useDispatch();
+  const [showComments, setShowComments] = useState(false);
+  const [commentContent, setCommentContent] = useState("");
+  const [comments, setComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  if (!post) return null;
 
   const handleLike = () => {
-    setLiked((prev) => !prev);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+    dispatch(likePost({ postId: post.postId }));
+  };
+
+  const handleCommentClick = async () => {
+    if (!showComments) {
+      setLoadingComments(true);
+      try {
+        const result = await dispatch(fetchComments({ postId: post.postId })).unwrap();
+        setComments(result.data || []);
+      } catch (error) {
+        console.error("Failed to fetch comments", error);
+      } finally {
+        setLoadingComments(false);
+      }
+    }
+    setShowComments(!showComments);
+  };
+
+  const handleAddComment = async () => {
+    if (!commentContent.trim()) return;
+    try {
+      const result = await dispatch(addComment({ postId: post.postId, content: commentContent })).unwrap();
+      if (result.data) {
+        setComments([result.data, ...comments]); // Prepend new comment
+        setCommentContent("");
+      }
+    } catch (error) {
+      console.error("Failed to add comment", error);
+    }
   };
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ y: -2 }}
-    >
-      <Card
-        sx={{
-          "&:hover": {
-            boxShadow: "0 4px 24px -8px hsla(150, 25%, 45%, 0.15)",
-            borderColor: "primary.light",
-          },
-          transition: "all 0.3s ease",
-        }}
-      >
-        <CardContent sx={{ p: 2.5 }}>
-          {/* Header */}
+    <Card sx={{ mb: 2 }}>
+      <CardHeader
+        avatar={
+          <Avatar
+            src={post.user?.avatarUrl}
+            alt={post.user?.name || "User"}
+          >
+            {(post.user?.name || "U")[0]}
+          </Avatar>
+        }
+        action={
+          <IconButton aria-label="settings">
+            <MoreVert />
+          </IconButton>
+        }
+        title={post.user?.name || "Unknown User"}
+        subheader={post.user?.headline || "Member"}
+      />
+      <CardContent sx={{ py: 1 }}>
+        <Typography variant="body1" color="text.primary" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
+          {post.content}
+        </Typography>
+        {post.imageUrl && (
           <Box
+            component="img"
+            src={post.imageUrl}
+            alt="Post content"
             sx={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              mb: 2,
+              width: "100%",
+              maxHeight: 500,
+              objectFit: "cover",
+              borderRadius: 1
             }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <motion.div whileHover={{ scale: 1.05 }}>
-                <Avatar
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    fontSize: 14,
-                    border: "2px solid transparent",
-                    background:
-                      "linear-gradient(135deg, hsla(150, 25%, 45%, 0.2), hsla(350, 30%, 70%, 0.2))",
-                  }}
-                >
-                  {author?.avatar}
-                </Avatar>
-              </motion.div>
-
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight={600}
-                  sx={{
-                    cursor: "pointer",
-                    "&:hover": { color: "primary.main" },
-                    transition: "color 0.2s",
-                  }}
-                >
-                  {author?.name}
-                </Typography>
-
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                >
-                  {author?.title}
-                </Typography>
-
-                <Typography variant="caption" color="text.disabled">
-                  {time}
-                </Typography>
-              </Box>
-            </Box>
-
-            <IconButton size="small">
-              <MoreHoriz sx={{ fontSize: 20 }} />
-            </IconButton>
-          </Box>
-
-          {/* Content */}
-          <Typography
-            variant="body2"
-            sx={{ mb: 2, lineHeight: 1.7, whiteSpace: "pre-line" }}
-          >
-            {content}
+          />
+        )}
+      </CardContent>
+      <Divider />
+      <CardActions disableSpacing sx={{ justifyContent: "space-between", px: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton aria-label="like" onClick={handleLike} color={post.isLiked ? "primary" : "default"}>
+            {post.isLiked ? <ThumbUp fontSize="small" /> : <ThumbUpOutlined fontSize="small" />}
+          </IconButton>
+          <Typography variant="body2" color="text.secondary">
+            {post.likesCount > 0 ? post.likesCount : ""}
           </Typography>
+        </Box>
 
-          {/* Image */}
-          {image && (
-            <motion.div whileHover={{ scale: 1.01 }}>
-              <Box
-                component="img"
-                src={image}
-                alt="Post"
-                sx={{
-                  width: "100%",
-                  height: 256,
-                  objectFit: "cover",
-                  borderRadius: 2,
-                  mb: 2,
-                }}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton aria-label="comment" onClick={handleCommentClick}>
+            <CommentOutlined fontSize="small" />
+          </IconButton>
+          <Typography variant="body2" color="text.secondary">
+            {post.commentsCount > 0 ? post.commentsCount : ""}
+          </Typography>
+        </Box>
+
+        <IconButton aria-label="share">
+          <ShareOutlined fontSize="small" />
+        </IconButton>
+      </CardActions>
+
+      {/* Comments Section */}
+      {showComments && (
+        <>
+          <Divider />
+          <Box sx={{ p: 2, bgcolor: 'action.hover' }}>
+            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Add a comment..."
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                sx={{ bgcolor: 'background.paper' }}
               />
-            </motion.div>
-          )}
-
-          {/* Stats */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-              pb: 2,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Box
-                sx={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: "50%",
-                  bgcolor: "warning.light",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 10,
-                }}
-              >
-                ❤️
-              </Box>
-              <Typography variant="caption" color="text.secondary">
-                {likeCount.toLocaleString()}
-              </Typography>
+              <IconButton color="primary" onClick={handleAddComment} disabled={!commentContent.trim()}>
+                <Send />
+              </IconButton>
             </Box>
 
-            <Typography variant="caption" color="text.secondary">
-              {comments} comments
-            </Typography>
+            <List disablePadding>
+              {comments.map((comment) => (
+                <ListItem key={comment.id} alignItems="flex-start" sx={{ px: 0 }}>
+                  <ListItemAvatar>
+                    <Avatar src={comment.userAvatar} sx={{ width: 32, height: 32 }}>
+                      {(comment.userName || "U")[0]}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Typography variant="subtitle2" component="span">
+                        {comment.userName}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="body2" color="text.primary">
+                        {comment.content}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ))}
+              {comments.length === 0 && !loadingComments && (
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 1 }}>
+                  No comments yet. Be the first!
+                </Typography>
+              )}
+            </List>
           </Box>
-
-          <Divider sx={{ mb: 1.5 }} />
-
-          {/* Actions */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                startIcon={
-                  liked ? (
-                    <Favorite sx={{ color: "warning.main" }} />
-                  ) : (
-                    <FavoriteBorder />
-                  )
-                }
-                onClick={handleLike}
-                sx={{
-                  color: liked ? "warning.main" : "text.secondary",
-                  bgcolor: liked
-                    ? "hsla(350, 30%, 70%, 0.1)"
-                    : "transparent",
-                  "&:hover": {
-                    bgcolor: liked
-                      ? "hsla(350, 30%, 70%, 0.15)"
-                      : "action.hover",
-                  },
-                }}
-              >
-                Like
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                startIcon={<ChatBubbleOutline />}
-                sx={{ color: "text.secondary" }}
-              >
-                Comment
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                startIcon={<Share />}
-                sx={{ color: "text.secondary" }}
-              >
-                Share
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <IconButton
-                onClick={() => setSaved((prev) => !prev)}
-                sx={{
-                  color: saved ? "primary.main" : "text.secondary",
-                  bgcolor: saved
-                    ? "hsla(150, 25%, 45%, 0.1)"
-                    : "transparent",
-                  "&:hover": {
-                    bgcolor: saved
-                      ? "hsla(150, 25%, 45%, 0.15)"
-                      : "action.hover",
-                  },
-                }}
-              >
-                {saved ? <Bookmark /> : <BookmarkBorder />}
-              </IconButton>
-            </motion.div>
-          </Box>
-        </CardContent>
-      </Card>
-    </motion.article>
+        </>
+      )}
+    </Card>
   );
 };
+
+export default PostCard;

@@ -17,17 +17,19 @@ import {
   TrendingUp,
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-const stats = [
-  { label: "Profile Views", value: "2,847", change: "+12%" },
-  { label: "Post Impressions", value: "48.2K", change: "+28%" },
-  { label: "Search Appearances", value: "892", change: "+8%" },
-];
+// const stats = [
+//   { label: "Profile Views", value: "2,847", change: "+12%" },
+//   { label: "Post Impressions", value: "48.2K", change: "+28%" },
+//   { label: "Search Appearances", value: "892", change: "+8%" },
+// ];
 
-const skills = ["React", "TypeScript", "Node.js", "Python", "AWS"];
+// const skills = ["React", "TypeScript", "Node.js", "Python", "AWS"];
 
 export const ProfileSidebar = () => {
 
+  const navigate=useNavigate();
   const { user, userProfile } = useSelector((state) => state.auth);
 
   if (!user || !userProfile) return null;
@@ -136,7 +138,7 @@ export const ProfileSidebar = () => {
             </Box> */}
 
             <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-              <Button variant="contained" fullWidth>
+              <Button variant="contained" fullWidth onClick={() =>navigate('/profile/me')}>
                 Edit Profile
               </Button>
               <IconButton

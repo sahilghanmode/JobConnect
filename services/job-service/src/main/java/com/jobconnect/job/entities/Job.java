@@ -10,6 +10,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -74,8 +76,9 @@ public class Job {
     private Boolean isRemote = false;
 
     @Column(columnDefinition = "JSON")
-    private String skillsRequired;   // store JSON string
+    private String skillsRequired; // store JSON string
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private JobStatus status;
 
@@ -90,13 +93,12 @@ public class Job {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Relationships 
+    // Relationships
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id", insertable = false, updatable = false)
     private User recruiter;
 
-    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", insertable = false, updatable = false)
     private Company company;

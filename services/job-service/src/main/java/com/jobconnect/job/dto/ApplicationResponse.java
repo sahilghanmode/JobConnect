@@ -1,11 +1,10 @@
 package com.jobconnect.job.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
-
-import com.jobconnect.job.entities.ApplicationStatus;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +18,6 @@ public class ApplicationResponse {
     private String candidateEmail;
     private String resumeUrl;
     private String coverLetter;
-    private ApplicationStatus status;
+    private String status;
     private LocalDateTime appliedAt;
-    private LocalDateTime updatedAt;
 }

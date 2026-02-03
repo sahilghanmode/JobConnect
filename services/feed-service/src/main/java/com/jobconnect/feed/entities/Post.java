@@ -24,58 +24,42 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name="posts")
+@Table(name = "posts")
 @Data
 @RequiredArgsConstructor
 @ToString
 public class Post {
-	
-	@Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="post_id")
-	private Long id;
-	
-	
-	@Column(name="user_id" , unique=true, nullable=false)
-	private Long userId;
-	
-	@Column(name="content", columnDefinition = "TEXT")
-	private String content;
-	
-	@Column(name="image_url",length=500)
-	private String imageUrl;
-	
+    @Column(name = "post_id")
+    private Long id;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Column(name = "content", columnDefinition = "TEXT")
+    private String content;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @CreationTimestamp
-	@Column(name="created_at",updatable=false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-    
+
     @UpdateTimestamp
-    @Column(name="updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "user_id",
-        referencedColumnName = "id",
-        insertable = false,
-        updatable = false,
-        foreignKey = @ForeignKey(name = "fk_posts_user")
-    )
+    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "fk_posts_user"))
     private User user;
 
-    @OneToMany(
-        mappedBy = "post",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostLike> likes;
 
-    @OneToMany(
-        mappedBy = "post",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
-	
-	
+
 }

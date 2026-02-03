@@ -17,9 +17,9 @@ export const loginUser = createAsyncThunk(
 );
 export const signupUser = createAsyncThunk(
   "auth/signup",
-  async ({ name, email, password }, { rejectWithValue }) => {
+  async ({ name, email, password, role }, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.post("/auth/signup", { name, email, password });
+      const res = await axiosInstance.post("/auth/signup", { name, email, password, role });
       return res.data;
     } catch (err) {
       return rejectWithValue(
@@ -54,24 +54,49 @@ export const resendOtp = createAsyncThunk(
     }
   }
 );
+export const fetchCurrentUser = createAsyncThunk(
+  "auth/fetchCurrentUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/auth/current-user");
+      return { user: response.data.user, userProfile: response.data.userProfile };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.msg || "Failed to fetch user");
+    }
+  }
+);
+
+const savedUser = JSON.parse(sessionStorage.getItem("user"));
+const savedUserProfile = JSON.parse(sessionStorage.getItem("userProfile"));
+// const savedAuth = JSON.parse(sessionStorage.getItem("isAuthenticated"));
+
 
 const authSlice = createSlice({
   name: "auth",
+
   initialState: {
-    user: null,
-    userProfile: null,
-    isAuthenticated: false,
+    user: savedUser || null,
+    userProfile: savedUserProfile || null,
+    isAuthenticated: !!savedUser, // Derive from user presence
     loading: false,
     error: null,
   },
   reducers: {
     logout(state) {
       state.user = null;
+      state.userProfile = null; // Clear profile on logout
       state.isAuthenticated = false;
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("userProfile");
+      sessionStorage.removeItem("isAuthenticated");
     },
     setUser(state, action) {
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
+    },
+    setUserProfile(state, action) {
+      state.userProfile = action.payload;
+      sessionStorage.setItem("userProfile", JSON.stringify(action.payload));
     },
     clearError(state) {
       state.error = null;
@@ -89,13 +114,18 @@ const authSlice = createSlice({
         state.userProfile = action.payload.userProfile;
         state.isAuthenticated = true;
         state.error = null;
+
+        sessionStorage.setItem("user", JSON.stringify(action.payload.user));
+        sessionStorage.setItem("userProfile", JSON.stringify(action.payload.userProfile));
+        sessionStorage.setItem("isAuthenticated", true);
+
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.isAuthenticated = false;
       })
-      
+
 
       .addCase(signupUser.pending, (state) => {
         state.loading = true;
@@ -135,9 +165,24 @@ const authSlice = createSlice({
       .addCase(resendOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // Fetch Current User
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.userProfile = action.payload.userProfile;
+        state.isAuthenticated = true;
+        sessionStorage.setItem("user", JSON.stringify(action.payload.user));
+        sessionStorage.setItem("userProfile", JSON.stringify(action.payload.userProfile));
+        sessionStorage.setItem("isAuthenticated", true);
+      })
+      .addCase(fetchCurrentUser.rejected, (state) => {
+        state.isAuthenticated = false;
+        state.user = null;
+        sessionStorage.clear();
       });
   },
 });
 
-export const { logout, setUser, clearError } = authSlice.actions;
+export const { logout, setUser, setUserProfile, clearError } = authSlice.actions;
 export default authSlice.reducer;

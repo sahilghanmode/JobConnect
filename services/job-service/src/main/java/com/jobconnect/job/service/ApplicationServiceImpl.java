@@ -21,8 +21,10 @@ import com.jobconnect.job.repository.JobRepository;
 @Transactional
 public class ApplicationServiceImpl implements ApplicationService {
     
+    @Autowired
     private ApplicationRepository applicationRepository;
     
+    @Autowired
     private JobRepository jobRepository;
     
     @Override

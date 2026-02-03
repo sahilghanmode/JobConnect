@@ -11,26 +11,15 @@ import {
   Box,
 } from "@mui/material";
 import { Logout, Person, Settings } from "@mui/icons-material";
-// import { useAuth } from "@/contexts/AuthContext"; // ❌ commented for now
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../store/slices/authSlice.js";
+import { useNavigate } from "react-router-dom";
 
 export const UserMenu = () => {
-  // ❌ Context not used for now
-  // const { user, signOut } = useAuth();
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  // ✅ Temporary mock user (remove later when AuthContext is ready)
-  const user = {
-    email: "user@example.com",
-    user_metadata: {
-      full_name: "Demo User",
-      avatar_url: "",
-    },
-  };
-
-  const signOut = async () => {
-    console.log("Sign out clicked");
-  };
-
-  // ✅ JSX version (removed TypeScript generics)
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -42,14 +31,15 @@ export const UserMenu = () => {
     setAnchorEl(null);
   };
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     handleClose();
-    await signOut();
+    dispatch(logout());
+    navigate("/auth");
   };
 
   const getInitials = () => {
-    if (user?.user_metadata?.full_name) {
-      return user.user_metadata.full_name
+    if (user?.name) {
+      return user.name
         .split(" ")
         .map((n) => n[0])
         .join("")
@@ -63,7 +53,7 @@ export const UserMenu = () => {
   };
 
   const getDisplayName = () => {
-    return user?.user_metadata?.full_name || user?.email || "User";
+    return user?.name || user?.email || "User";
   };
 
   return (
@@ -71,7 +61,8 @@ export const UserMenu = () => {
       <motion.div whileHover={{ scale: 1.05 }}>
         <Avatar
           onClick={handleClick}
-          src={user?.user_metadata?.avatar_url}
+          // Fallback to name initials if no avatar is present (add avatarUrl check if available in user object)
+          src={user?.avatarUrl}
           sx={{
             width: 36,
             height: 36,
@@ -83,7 +74,7 @@ export const UserMenu = () => {
             color: "primary.contrastText",
           }}
         >
-          {!user?.user_metadata?.avatar_url && getInitials()}
+          {!user?.avatarUrl && getInitials()}
         </Avatar>
       </motion.div>
 
@@ -113,7 +104,7 @@ export const UserMenu = () => {
 
         <Divider />
 
-        <MenuItem onClick={handleClose} sx={{ py: 1.5 }}>
+        <MenuItem onClick={() => { handleClose(); navigate("/profile/me"); }} sx={{ py: 1.5 }}>
           <ListItemIcon>
             <Person fontSize="small" />
           </ListItemIcon>

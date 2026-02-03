@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, signupUser } from "../../store/slices/authSlice.js";   
+import { loginUser, signupUser } from "../../store/slices/authSlice.js";
 import { setUser } from "../../store/slices/authSlice";
 import axiosInstance from "../../lib/axios.js";
 import {
@@ -15,6 +15,8 @@ import {
   CircularProgress,
   Paper,
   Container,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 
 // import { Google, GitHub } from "@mui/icons-material";
@@ -27,16 +29,17 @@ const passwordSchema = z
   .min(6, "Password must be at least 6 characters");
 
 const Auth = () => {
-  const [mode, setMode] = useState("login"); 
+  const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isRecruiter, setIsRecruiter] = useState(false);
 
-    const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
 
   const navigate = useNavigate();
@@ -67,32 +70,32 @@ const Auth = () => {
     }
   };
 
-  const handleSubmit = async(e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!validateForm()) return;
+    if (!validateForm()) return;
 
-  if (mode === "login") {
-    await dispatch(loginUser({ email, password })).unwrap();
+    if (mode === "login") {
+      await dispatch(loginUser({ email, password })).unwrap();
       navigate("/");
-  } else {
-    await dispatch(signupUser({name, email, password })).unwrap();
-    navigate("/auth/verify",{state:{email}});
-  }
-};
+    } else {
+      await dispatch(signupUser({ name, email, password, role: isRecruiter ? "RECRUITER" : "CANDIDATE" })).unwrap();
+      navigate("/auth/verify", { state: { email } });
+    }
+  };
 
 
-//   const handleGoogleSignIn = async () => {
-//     setError(null);
-//     // const { error } = await signInWithGoogle();
-//     if (error) setError(error.message);
-//   };
+  //   const handleGoogleSignIn = async () => {
+  //     setError(null);
+  //     // const { error } = await signInWithGoogle();
+  //     if (error) setError(error.message);
+  //   };
 
-//   const handleGitHubSignIn = async () => {
-//     setError(null);
-//     // const { error } = await signInWithGitHub();
-//     if (error) setError(error.message);
-//   };
+  //   const handleGitHubSignIn = async () => {
+  //     setError(null);
+  //     // const { error } = await signInWithGitHub();
+  //     if (error) setError(error.message);
+  //   };
 
   const toggleMode = () => {
     setMode(mode === "login" ? "signup" : "login");
@@ -162,12 +165,12 @@ const Auth = () => {
 
                   <Box component="form" onSubmit={handleSubmit}>
 
-                    {mode=="signup" &&(<TextField 
-                        label="Name"
-                        fullWidth
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        sx={{ mb: 2 }}
+                    {mode == "signup" && (<TextField
+                      label="Name"
+                      fullWidth
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      sx={{ mb: 2 }}
                     />)}
 
                     <TextField
@@ -187,16 +190,33 @@ const Auth = () => {
                     />
 
                     {mode === "signup" && (
-                      <TextField
-                        label="Confirm Password"
-                        type="password"
-                        fullWidth
-                        value={confirmPassword}
-                        onChange={(e) =>
-                          setConfirmPassword(e.target.value)
-                        }
-                        sx={{ mb: 3 }}
-                      />
+                      <>
+                        <TextField
+                          label="Confirm Password"
+                          type="password"
+                          fullWidth
+                          value={confirmPassword}
+                          onChange={(e) =>
+                            setConfirmPassword(e.target.value)
+                          }
+                          sx={{ mb: 2 }}
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={isRecruiter}
+                              onChange={(e) => setIsRecruiter(e.target.checked)}
+                              color="secondary" // Distinct color for recruiter
+                            />
+                          }
+                          label={
+                            <Typography variant="body2" color="text.secondary">
+                              I am a Recruiter
+                            </Typography>
+                          }
+                          sx={{ mb: 2, display: 'block' }}
+                        />
+                      </>
                     )}
 
                     <Button

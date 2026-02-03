@@ -9,4 +9,6 @@ import com.jobconnect.feed.entities.Comment;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     long countByPostId(Long postId);
 
+    java.util.List<Comment> findByPostIdOrderByCreatedAtDesc(Long postId);
+
 }

@@ -63,7 +63,7 @@ const sendOtp = async (email) => {
 
 export const signupController = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
         console.log(name, email, password);
 
         if (!name || !email || !password) {
@@ -91,6 +91,7 @@ export const signupController = async (req, res) => {
                 name,
                 email,
                 hashPassword: hashedPassword,
+                role: role === "RECRUITER" ? "RECRUITER" : "CANDIDATE",
                 otpAttempts: 0,
             },
         });
@@ -194,7 +195,7 @@ export const loginController = async (req, res) => {
         if (!user || !user.isVerified) {
             return res.status(401).json({ msg: "Invalid credentials" });
         }
-        const userProfile=await prisma.profile.findUnique({where:{userId:user.id}})
+        const userProfile = await prisma.profile.findUnique({ where: { userId: user.id } })
 
         const isValid = await bcrypt.compare(password, user.hashPassword);
         if (!isValid) {
@@ -310,3 +311,34 @@ export const resendOtpController = async (req, res) => {
     }
 };
 
+
+export const getCurrentUserController = async (req, res) => {
+    try {
+        const token = req.cookies.authToken;
+        if (!token) return res.status(401).json({ msg: "No token provided" });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+
+        if (!user) {
+            res.clearCookie("authToken");
+            return res.status(401).json({ msg: "User not found" });
+        }
+
+        const userProfile = await prisma.profile.findUnique({ where: { userId: user.id } });
+
+        return res.status(200).json({
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                isVerified: user.isVerified,
+                createdAt: user.createdAt,
+            },
+            userProfile
+        });
+    } catch (err) {
+        return res.status(401).json({ msg: "Invalid or expired token" });
+    }
+};

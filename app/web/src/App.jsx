@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import './App.css'
 import Home from './pages/home/Home'
@@ -9,12 +7,26 @@ import { muiTheme } from './theme/muiTheme.js'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import VerifyOtp from './pages/auth/VerifyOtp.jsx';
 import ProfileSetup from './pages/auth/SetProfile.jsx';
-import Profile from './pages/profile/Profile.jsx';
+import ProfilePage from './profile/ProfilePage.jsx';
+import Jobs from './pages/jobs/Jobs.jsx';
+import Feed from './pages/feed/Feed.jsx';
+import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { fetchCurrentUser } from "./store/slices/authSlice.js";
+import RecruiterDashboard from './pages/recruiter/RecruiterDashboard.jsx';
+import PostJobPage from './pages/recruiter/PostJobPage.jsx';
+
+import JobApplicationsPage from './pages/recruiter/JobApplicationsPage.jsx';
 
 const queryClient = new QueryClient();
 
 function App() {
-  const [count, setCount] = useState(0)
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -25,8 +37,19 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/auth/*" element={<Auth />} />
             <Route path='/auth/verify' element={<VerifyOtp />} />
-            <Route path="/profile-setup" element={<ProfileSetup />} />
-            <Route path="/profile/me" element={<Profile/>}/>
+
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/profile-setup" element={<ProfileSetup />} />
+              <Route path="/profile/me" element={<ProfilePage />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/feed" element={<Feed />} />
+              {/* Recruiter Routes */}
+              <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+              <Route path="/recruiter/post-job" element={<PostJobPage />} />
+              <Route path="/recruiter/job/:jobId/applications" element={<JobApplicationsPage />} />
+            </Route>
+
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

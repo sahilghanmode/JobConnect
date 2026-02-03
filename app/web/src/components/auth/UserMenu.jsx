@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { Logout, Person, Settings } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../store/slices/authSlice.js";
+import { logout, logoutUser } from "../../store/slices/authSlice.js";
 import { useNavigate } from "react-router-dom";
 
 export const UserMenu = () => {
@@ -31,9 +31,9 @@ export const UserMenu = () => {
     setAnchorEl(null);
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     handleClose();
-    dispatch(logout());
+    await dispatch(logoutUser());
     navigate("/auth");
   };
 

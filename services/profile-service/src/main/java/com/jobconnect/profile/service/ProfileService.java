@@ -3,6 +3,7 @@ package com.jobconnect.profile.service;
 import java.util.List;
 
 import com.jobconnect.profile.dto.AvatarDTO;
+import com.jobconnect.profile.dto.BannerDTO;
 import com.jobconnect.profile.dto.BioDTO;
 import com.jobconnect.profile.dto.EducationAddDTO;
 import com.jobconnect.profile.dto.ExperienceAddDTO;
@@ -14,13 +15,13 @@ import com.jobconnect.profile.entities.Profile;
 
 public interface ProfileService {
 	public Profile addProfile(Profile profile);
-	
+
 	public Profile getProfile(Long id);
-	
+
 	public Profile getProfileByUserId(Long UserId);
-	
+
 	public List<Profile> getAllProfiles();
-	
+
 	public Profile updateProfile(Long id, ProfileUpdateDTO dto);
 
 	public Profile updateSkills(Long id, SkillAddDTO dto);
@@ -36,6 +37,8 @@ public interface ProfileService {
 	public Profile updateLocation(Long id, LocationDTO dto);
 
 	public Profile updateAvatar(Long id, AvatarDTO dto);
+
+	public Profile updateBanner(Long id, BannerDTO dto);
 
 	public void deleteProfile(Long id);
 

@@ -7,6 +7,8 @@ import { muiTheme } from './theme/muiTheme.js'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import VerifyOtp from './pages/auth/VerifyOtp.jsx';
 import ProfileSetup from './pages/auth/SetProfile.jsx';
+import ForgotPassword from './pages/auth/ForgotPassword.jsx';
+import ResetPassword from './pages/auth/ResetPassword.jsx';
 import ProfilePage from './profile/ProfilePage.jsx';
 import Jobs from './pages/jobs/Jobs.jsx';
 import Feed from './pages/feed/Feed.jsx';
@@ -36,15 +38,22 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth/*" element={<Auth />} />
+            <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path='/auth/verify' element={<VerifyOtp />} />
 
             {/* Protected Routes */}
+            {/* Protected Routes - General */}
             <Route element={<ProtectedRoute />}>
               <Route path="/profile-setup" element={<ProfileSetup />} />
               <Route path="/profile/me" element={<ProfilePage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/feed" element={<Feed />} />
-              {/* Recruiter Routes */}
+            </Route>
+
+            {/* Recruiter Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['RECRUITER']} />}>
               <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
               <Route path="/recruiter/post-job" element={<PostJobPage />} />
               <Route path="/recruiter/job/:jobId/applications" element={<JobApplicationsPage />} />

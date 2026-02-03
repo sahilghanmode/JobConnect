@@ -6,7 +6,9 @@ import {
     resetPasswordController,
     signupController,
     verifyOtpController,
-    getCurrentUserController
+    getCurrentUserController,
+    logoutController,
+    getUserByIdController
 } from "../controller/authController.js";
 
 const authRoute = Router();
@@ -17,6 +19,8 @@ authRoute.post("/verify-otp", verifyOtpController);
 
 authRoute.post("/login", loginController);
 authRoute.get("/current-user", getCurrentUserController);
+authRoute.get("/:id", getUserByIdController); // Add this route
+authRoute.post("/logout", logoutController);
 authRoute.post("/forgot-password", forgotPasswordController);
 
 authRoute.post("/reset-password", resetPasswordController);

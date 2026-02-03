@@ -66,6 +66,19 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      await axiosInstance.post("/auth/logout");
+      return;
+    } catch (error) {
+      console.error(error);
+      // return rejectWithValue(error.response?.data?.msg || "Logout failed");
+    }
+  }
+);
+
 const savedUser = JSON.parse(sessionStorage.getItem("user"));
 const savedUserProfile = JSON.parse(sessionStorage.getItem("userProfile"));
 // const savedAuth = JSON.parse(sessionStorage.getItem("isAuthenticated"));
@@ -180,6 +193,20 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         sessionStorage.clear();
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.userProfile = null;
+        state.isAuthenticated = false;
+        sessionStorage.clear();
+      })
+      .addCase(logoutUser.rejected, (state) => {
+        state.user = null;
+        state.userProfile = null; // Clear profile on logout
+        state.isAuthenticated = false;
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("userProfile");
+        sessionStorage.removeItem("isAuthenticated");
       });
   },
 });

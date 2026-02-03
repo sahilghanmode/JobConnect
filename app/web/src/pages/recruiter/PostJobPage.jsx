@@ -1,26 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  TextField,
-  Typography,
-  Paper,
-  MenuItem,
-  Stack,
-  Chip,
-  Alert,
-  CircularProgress,
-  Card,
-  CardContent,
-  Divider,
-  InputAdornment,
-} from "@mui/material";
-import { Autocomplete } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   WorkOutline,
   AttachMoney,
@@ -29,25 +9,14 @@ import {
   ArrowForward,
   Business,
   LocationOn,
+  Close
 } from "@mui/icons-material";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../lib/axios";
-import {
-  searchCompanies,
-  searchLocations,
-  searchSkills,
-} from "../../lib/externalApis";
 import { Navbar } from "../../components/layout/Navbar";
+import jobInstance from "../../lib/jobInstance";
+import { searchCompanies, searchLocations, searchSkills, searchJobTitles } from "../../lib/externalApis";
 
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship", "Freelance"];
-const EXPERIENCE_LEVELS = [
-  "Entry Level",
-  "Mid Level",
-  "Senior Level",
-  "Director",
-  "Executive",
-];
+const EXPERIENCE_LEVELS = ["Entry Level", "Mid Level", "Senior Level", "Director", "Executive"];
 
 const PostJobPage = () => {
   const navigate = useNavigate();
@@ -57,6 +26,7 @@ const PostJobPage = () => {
   const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
+    companyId: null,
     jobTitle: "",
     companyName: "",
     location: "",
@@ -67,40 +37,105 @@ const PostJobPage = () => {
     description: "",
     requirements: "",
     responsibilities: "",
-    skillsRequired: "",
-    expiresAt: null,
+    skillsRequired: [], // Array for UI
+    expiresAt: "", // String YYYY-MM-DD for input
+    isRemote: false
   });
 
-  const [titleOptions, setTitleOptions] = useState([]);
-  const [companyOptions, setCompanyOptions] = useState([]);
-  const [locationOptions, setLocationOptions] = useState([]);
-  const [skillOptions, setSkillOptions] = useState([]);
+  // Autocomplete States
+  const [suggestions, setSuggestions] = useState({
+    title: [],
+    company: [],
+    location: [],
+    skills: []
+  });
 
-  // Prefill Company Name from Profile Experience
+  const [showSuggestions, setShowSuggestions] = useState({
+    title: false,
+    company: false,
+    location: false,
+    skills: false
+  });
+
+  const [skillInput, setSkillInput] = useState("");
+
+  // Prefill Company Name
   useEffect(() => {
     if (userProfile?.experience) {
       try {
         const experience = JSON.parse(userProfile.experience);
         if (Array.isArray(experience) && experience.length > 0) {
-          // Access the most recent experience (assuming first item)
           const currentCompany = experience[0].company;
           if (currentCompany) {
             setFormData((prev) => ({ ...prev, companyName: currentCompany }));
           }
         }
       } catch (err) {
-        console.error("Failed to parse user experience for company prefill:", err);
+        console.error("Failed to parse user experience:", err);
       }
     }
   }, [userProfile]);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
 
-  const handleSearch = async (query, fn, setter) => {
-    if (!query) return;
-    const res = await fn(query);
-    setter(res);
+  const handleSearch = async (query, fn, field) => {
+    if (!query) {
+      setSuggestions(prev => ({ ...prev, [field]: [] }));
+      return;
+    }
+    try {
+      const res = await fn(query);
+      setSuggestions(prev => ({ ...prev, [field]: res }));
+      setShowSuggestions(prev => ({ ...prev, [field]: true }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const selectSuggestion = (field, value) => {
+    if (field === 'companyName' && typeof value === 'object') {
+      setFormData(prev => ({
+        ...prev,
+        companyName: value.name,
+        companyId: value.companyId || value.id // Handle potential ID field names
+      }));
+    } else {
+      const valStr = typeof value === 'string' ? value : value.name || "";
+      setFormData(prev => ({ ...prev, [field]: valStr }));
+    }
+    setShowSuggestions(prev => ({ ...prev, [field]: false }));
+  };
+
+  // Skill Handling
+  const addSkill = (skill) => {
+    if (skill && !formData.skillsRequired.includes(skill)) {
+      setFormData(prev => ({
+        ...prev,
+        skillsRequired: [...prev.skillsRequired, skill]
+      }));
+    }
+    setSkillInput("");
+    setShowSuggestions(prev => ({ ...prev, skills: false }));
+  };
+
+  const removeSkill = (skillToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      skillsRequired: prev.skillsRequired.filter(s => s !== skillToRemove)
+    }));
+  };
+
+  const handleSkillKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSkill(skillInput);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -108,17 +143,19 @@ const PostJobPage = () => {
     setLoading(true);
     setError(null);
 
+    const payload = {
+      ...formData,
+      salaryMin: Number(formData.salaryMin) || 0,
+      salaryMax: Number(formData.salaryMax) || 0,
+      skillsRequired: JSON.stringify(formData.skillsRequired),
+      // Use standard LocalDateTime format without Z (timezone), assuming server local time or UTC
+      expiresAt: formData.expiresAt ? `${formData.expiresAt}T23:59:59` : null,
+    };
+
     try {
-      await axiosInstance.post(
-        "/jobs",
-        {
-          ...formData,
-          salaryMin: Number(formData.salaryMin) || 0,
-          salaryMax: Number(formData.salaryMax) || 0,
-          expiresAt: formData.expiresAt
-            ? formData.expiresAt.toISOString()
-            : null,
-        },
+      await jobInstance.post(
+        "/api/jobs",
+        payload,
         { headers: { "X-User-Id": user?.id } }
       );
 
@@ -130,363 +167,346 @@ const PostJobPage = () => {
     }
   };
 
+  // Theme primary color: hsl(150, 25%, 45%)
+
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box
-        sx={{
-          minHeight: "100vh",
-          bgcolor: "grey.50", // Light background for contrast
-          py: 6,
-          pt: 12, // Added padding for fixed navbar
-        }}
-      >
-        <Navbar />
-        <Container maxWidth="md">
-          {/* Header */}
-          <Box sx={{ textAlign: "center", mb: 5 }}>
-            <Typography
-              variant="h3"
-              component="h1"
-              fontWeight={800}
-              sx={{
-                mb: 1,
-                background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Post a New Job
-            </Typography>
-            <Typography variant="h6" color="text.secondary" fontWeight={400}>
-              Reach the best talent for your team
-            </Typography>
-          </Box>
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <Navbar />
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900 mb-2">
+            Post a New Job
+          </h1>
+          <p className="text-lg text-gray-500">Reach the best talent for your team</p>
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <Card
-              elevation={0}
-              sx={{
-                borderRadius: 4,
-                border: "1px solid",
-                borderColor: "divider",
-                overflow: "visible", // For autocomplete dropdowns if needed
-              }}
-            >
-              <CardContent sx={{ p: { xs: 3, md: 5 } }}>
-                <Grid container spacing={4}>
-                  {/* Basic Info Section */}
-                  <Grid item xs={12}>
-                    <Typography variant="h6" fontWeight={700} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <WorkOutline color="primary" /> Basic Information
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs={12}>
-                        <Autocomplete
-                          freeSolo
-                          options={titleOptions}
-                          onInputChange={(_, v) =>
-                            handleSearch(v, searchJobTitles, setTitleOptions)
-                          }
-                          onChange={(_, v) =>
-                            setFormData({ ...formData, jobTitle: v || "" })
-                          }
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Job Title"
-                              required
-                              placeholder="e.g. Senior Software Engineer"
-                              variant="outlined"
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Autocomplete
-                          freeSolo
-                          options={companyOptions}
-                          value={formData.companyName}
-                          getOptionLabel={(o) =>
-                            typeof o === "string" ? o : o.name
-                          }
-                          onInputChange={(_, v) => {
-                            // Allow manual override
-                            handleSearch(v, searchCompanies, setCompanyOptions);
-                            setFormData(prev => ({ ...prev, companyName: v }));
-                          }}
-                          onChange={(_, v) =>
-                            setFormData({
-                              ...formData,
-                              companyName:
-                                typeof v === "string" ? v : v?.name || "",
-                            })
-                          }
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Company"
-                              required
-                              InputProps={{
-                                ...params.InputProps,
-                                startAdornment: (
-                                  <>
-                                    <InputAdornment position="start">
-                                      <Business color="action" fontSize="small" />
-                                    </InputAdornment>
-                                    {params.InputProps.startAdornment}
-                                  </>
-                                )
-                              }}
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Autocomplete
-                          freeSolo
-                          options={locationOptions}
-                          onInputChange={(_, v) =>
-                            handleSearch(v, searchLocations, setLocationOptions)
-                          }
-                          onChange={(_, v) =>
-                            setFormData({ ...formData, location: v || "" })
-                          }
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Location"
-                              placeholder="e.g. Remote, New York, NY"
-                              InputProps={{
-                                ...params.InputProps,
-                                startAdornment: (
-                                  <>
-                                    <InputAdornment position="start">
-                                      <LocationOn color="action" fontSize="small" />
-                                    </InputAdornment>
-                                    {params.InputProps.startAdornment}
-                                  </>
-                                )
-                              }}
-                            />
-                          )}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Grid>
+        {error && (
+          <div className="mb-6 bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">
+            {error}
+          </div>
+        )}
 
-                  <Grid item xs={12}>
-                    <Divider />
-                  </Grid>
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-8 md:p-10 space-y-10">
 
-                  {/* Compensation Section */}
-                  <Grid item xs={12}>
-                    <Typography variant="h6" fontWeight={700} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AttachMoney color="primary" /> Compensation & Details
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          select
-                          label="Employment Type"
-                          name="employmentType"
-                          fullWidth
-                          value={formData.employmentType}
-                          onChange={handleChange}
+            {/* Basic Info */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <WorkOutline sx={{ color: "hsl(150, 25%, 45%)" }} /> Basic Information
+              </h2>
+
+              <div className="grid grid-cols-1 gap-6">
+                {/* Job Title */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
+                  <input
+                    type="text"
+                    name="jobTitle"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] focus:border-[hsl(150,25%,45%)] outline-none transition-all"
+                    placeholder="e.g. Senior Software Engineer"
+                    value={formData.jobTitle}
+                    onChange={(e) => {
+                      handleChange(e);
+                      handleSearch(e.target.value, searchJobTitles, 'title');
+                    }}
+                    onFocus={() => formData.jobTitle && setShowSuggestions(prev => ({ ...prev, title: true }))}
+                    required
+                  />
+                  {showSuggestions.title && suggestions.title.length > 0 && (
+                    <ul className="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      {suggestions.title.map((item, i) => (
+                        <li key={i}
+                          onClick={() => selectSuggestion('jobTitle', item)}
+                          className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-gray-700 border-b border-gray-50 last:border-0"
                         >
-                          {JOB_TYPES.map((t) => (
-                            <MenuItem key={t} value={t}>
-                              {t}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
 
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          select
-                          label="Experience Level"
-                          name="experienceLevel"
-                          fullWidth
-                          value={formData.experienceLevel}
-                          onChange={handleChange}
-                        >
-                          {EXPERIENCE_LEVELS.map((l) => (
-                            <MenuItem key={l} value={l}>
-                              {l}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          label="Min Annual Salary"
-                          name="salaryMin"
-                          type="number"
-                          fullWidth
-                          placeholder="e.g. 80000"
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                          }}
-                          onChange={handleChange}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          label="Max Annual Salary"
-                          name="salaryMax"
-                          type="number"
-                          fullWidth
-                          placeholder="e.g. 120000"
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                          }}
-                          onChange={handleChange}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Divider />
-                  </Grid>
-
-                  {/* Description Section */}
-                  <Grid item xs={12}>
-                    <Typography variant="h6" fontWeight={700} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Description color="primary" /> Job Description
-                    </Typography>
-                    <Stack spacing={3}>
-                      <TextField
-                        label="About the Role"
-                        name="description"
-                        multiline
-                        rows={4}
-                        required
-                        placeholder="Describe the main purpose of this job..."
-                        variant="outlined"
-                        onChange={handleChange}
-                      />
-                      <TextField
-                        label="Key Requirements"
-                        name="requirements"
-                        multiline
-                        rows={4}
-                        placeholder="List the must-have qualifications..."
-                        variant="outlined"
-                        onChange={handleChange}
-                      />
-                      <TextField
-                        label="Responsibilities"
-                        name="responsibilities"
-                        multiline
-                        rows={4}
-                        placeholder="What will the daily duties involve?"
-                        variant="outlined"
-                        onChange={handleChange}
-                      />
-                    </Stack>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Divider />
-                  </Grid>
-
-                  {/* Skills Section */}
-                  <Grid item xs={12}>
-                    <Typography variant="h6" fontWeight={700} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Code color="primary" /> Skills & Timeline
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs={12}>
-                        <Autocomplete
-                          multiple
-                          freeSolo
-                          options={skillOptions}
-                          onInputChange={(_, v) =>
-                            handleSearch(v, searchSkills, setSkillOptions)
-                          }
-                          onChange={(_, v) =>
-                            setFormData({
-                              ...formData,
-                              skillsRequired: v.join(", "),
-                            })
-                          }
-                          renderTags={(value, getTagProps) =>
-                            value.map((option, index) => (
-                              <Chip
-                                label={option}
-                                {...getTagProps({ index })}
-                                color="primary"
-                                variant="outlined"
-                                sx={{ borderRadius: '8px' }}
-                              />
-                            ))
-                          }
-                          renderInput={(params) => (
-                            <TextField {...params} label="Required Skills (Press Enter to add)" placeholder="React, Node.js, etc." />
-                          )}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <DatePicker
-                          label="Application Deadline"
-                          value={formData.expiresAt}
-                          onChange={(v) =>
-                            setFormData({ ...formData, expiresAt: v })
-                          }
-                          slotProps={{ textField: { fullWidth: true } }}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Grid>
-
-
-                  {/* Submit Action */}
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                      <Button variant="text" size="large" onClick={() => navigate(-1)} sx={{ color: 'text.secondary' }}>
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        size="large"
-                        disabled={loading}
-                        endIcon={!loading && <ArrowForward />}
-                        sx={{
-                          px: 4,
-                          py: 1.5,
-                          borderRadius: '12px',
-                          fontWeight: 600,
-                          textTransform: 'none',
-                          fontSize: '1rem',
-                          boxShadow: '0 4px 14px 0 rgba(0,0,0,0.1)',
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Company */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Company *</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Business className="text-gray-400 text-sm" />
+                      </div>
+                      <input
+                        type="text"
+                        name="companyName"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] focus:border-[hsl(150,25%,45%)] outline-none transition-all"
+                        placeholder="Company Name"
+                        value={formData.companyName}
+                        onChange={(e) => {
+                          handleChange(e);
+                          handleSearch(e.target.value, searchCompanies, 'company');
                         }}
-                      >
-                        {loading ? (
-                          <CircularProgress size={24} color="inherit" />
-                        ) : (
-                          "Post Job Opening"
-                        )}
-                      </Button>
-                    </Box>
-                  </Grid>
+                        onFocus={() => formData.companyName && setShowSuggestions(prev => ({ ...prev, company: true }))}
+                        required
+                      />
+                    </div>
+                    {showSuggestions.company && suggestions.company.length > 0 && (
+                      <ul className="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-60 overflow-auto">
+                        {suggestions.company.map((item, i) => (
+                          <li key={i}
+                            onClick={() => selectSuggestion('companyName', item)}
+                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-gray-700"
+                          >
+                            {typeof item === 'string' ? item : item.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
 
-                </Grid>
-              </CardContent>
-            </Card>
-          </form>
-        </Container>
-      </Box>
-    </LocalizationProvider>
+                  {/* Location */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <LocationOn className="text-gray-400 text-sm" />
+                      </div>
+                      <input
+                        type="text"
+                        name="location"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] focus:border-[hsl(150,25%,45%)] outline-none transition-all"
+                        placeholder="e.g. Remote, New York"
+                        value={formData.location}
+                        onChange={(e) => {
+                          handleChange(e);
+                          handleSearch(e.target.value, searchLocations, 'location');
+                        }}
+                        onFocus={() => formData.location && setShowSuggestions(prev => ({ ...prev, location: true }))}
+                      />
+                    </div>
+                    {showSuggestions.location && suggestions.location.length > 0 && (
+                      <ul className="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-60 overflow-auto">
+                        {suggestions.location.map((item, i) => (
+                          <li key={i}
+                            onClick={() => selectSuggestion('location', item)}
+                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-gray-700"
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+
+                {/* Is Remote Checkbox */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isRemote"
+                    name="isRemote"
+                    checked={formData.isRemote}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-[hsl(150,25%,45%)] border-gray-300 rounded focus:ring-[hsl(150,25%,45%)]"
+                  />
+                  <label htmlFor="isRemote" className="text-sm text-gray-700">This is a fully remote position</label>
+                </div>
+              </div>
+            </section>
+
+            <div className="border-t border-gray-200"></div>
+
+            {/* Compensation */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <AttachMoney sx={{ color: "hsl(150, 25%, 45%)" }} /> Compensation & Details
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
+                  <select
+                    name="employmentType"
+                    value={formData.employmentType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none bg-white"
+                  >
+                    {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Experience Level</label>
+                  <select
+                    name="experienceLevel"
+                    value={formData.experienceLevel}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none bg-white"
+                  >
+                    {EXPERIENCE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Annual Salary ($)</label>
+                  <input
+                    type="number"
+                    name="salaryMin"
+                    value={formData.salaryMin}
+                    onChange={handleChange}
+                    placeholder="80000"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Annual Salary ($)</label>
+                  <input
+                    type="number"
+                    name="salaryMax"
+                    value={formData.salaryMax}
+                    onChange={handleChange}
+                    placeholder="120000"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <div className="border-t border-gray-200"></div>
+
+            {/* Description */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <Description sx={{ color: "hsl(150, 25%, 45%)" }} /> Job Description
+              </h2>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">About the Role *</label>
+                  <textarea
+                    name="description"
+                    rows="4"
+                    required
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Describe the main purpose of this job..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none resize-y"
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Key Requirements</label>
+                  <textarea
+                    name="requirements"
+                    rows="4"
+                    value={formData.requirements}
+                    onChange={handleChange}
+                    placeholder="List the must-have qualifications..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none resize-y"
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Responsibilities</label>
+                  <textarea
+                    name="responsibilities"
+                    rows="4"
+                    value={formData.responsibilities}
+                    onChange={handleChange}
+                    placeholder="What will the daily duties involve?"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none resize-y"
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+
+            <div className="border-t border-gray-200"></div>
+
+            {/* Skills */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <Code sx={{ color: "hsl(150, 25%, 45%)" }} /> Skills & Timeline
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Required Skills</label>
+                  <div className="p-2 border border-gray-300 rounded-lg min-h-[50px] focus-within:ring-2 focus-within:ring-[hsl(150,25%,45%)] focus-within:border-[hsl(150,25%,45%)] bg-white">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {formData.skillsRequired.map((skill, index) => (
+                        <span key={index} className="bg-[hsl(150,25%,94%)] text-[hsl(150,25%,25%)] px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                          {skill}
+                          <Close
+                            className="w-4 h-4 cursor-pointer hover:text-[hsl(150,25%,15%)]"
+                            fontSize="small"
+                            onClick={() => removeSkill(skill)}
+                          />
+                        </span>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      className="w-full outline-none text-sm"
+                      placeholder="Type a skill and press Enter..."
+                      value={skillInput}
+                      onChange={(e) => {
+                        setSkillInput(e.target.value);
+                        handleSearch(e.target.value, searchSkills, 'skills');
+                      }}
+                      onKeyDown={handleSkillKeyDown}
+                      onFocus={() => skillInput && setShowSuggestions(prev => ({ ...prev, skills: true }))}
+                    />
+                  </div>
+                  {showSuggestions.skills && suggestions.skills.length > 0 && (
+                    <ul className="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      {suggestions.skills.map((item, i) => (
+                        <li key={i}
+                          onClick={() => addSkill(item)}
+                          className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-gray-700 border-b border-gray-50 last:border-0"
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Application Deadline</label>
+                  <input
+                    type="date"
+                    name="expiresAt"
+                    value={formData.expiresAt}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(150,25%,45%)] outline-none"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-8 py-2.5 bg-[hsl(150,25%,45%)] text-white font-medium rounded-lg hover:bg-[hsl(150,25%,40%)] transition-colors shadow-lg shadow-[hsl(150,25%,45%)]/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {loading ? "Posting..." : "Post Job Opening"}
+                {!loading && <ArrowForward fontSize="small" />}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

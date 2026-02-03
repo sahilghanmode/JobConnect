@@ -20,3 +20,9 @@ export const updateEducation = (profileId, payload) =>
 
 export const updateLocation = (profileId, payload) =>
   profileInstance.patch(`/${profileId}/location`, payload);
+
+export const updateAvatar = (profileId, payload) =>
+  profileInstance.patch(`/${profileId}/avatar`, payload);
+
+export const updateBanner = (profileId, payload) =>
+  profileInstance.patch(`/${profileId}/banner`, payload);

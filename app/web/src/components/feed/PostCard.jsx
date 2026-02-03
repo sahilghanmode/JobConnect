@@ -25,6 +25,7 @@ import {
   MoreVert,
   Send
 } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 import { likePost, addComment, fetchComments } from "../../store/slices/feedSlice";
 
 const PostCard = ({ post }) => {
@@ -72,19 +73,26 @@ const PostCard = ({ post }) => {
     <Card sx={{ mb: 2 }}>
       <CardHeader
         avatar={
-          <Avatar
-            src={post.user?.avatarUrl}
-            alt={post.user?.name || "User"}
-          >
-            {(post.user?.name || "U")[0]}
-          </Avatar>
+          <Link to={`/profile/${post.user?.id}`} style={{ textDecoration: 'none' }}>
+            <Avatar
+              src={post.user?.avatarUrl}
+              alt={post.user?.name || "User"}
+              sx={{ cursor: 'pointer' }}
+            >
+              {(post.user?.name || "U")[0]}
+            </Avatar>
+          </Link>
         }
         action={
           <IconButton aria-label="settings">
             <MoreVert />
           </IconButton>
         }
-        title={post.user?.name || "Unknown User"}
+        title={
+          <Link to={`/profile/${post.user?.id}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}>
+            {post.user?.name || "Unknown User"}
+          </Link>
+        }
         subheader={post.user?.headline || "Member"}
       />
       <CardContent sx={{ py: 1 }}>

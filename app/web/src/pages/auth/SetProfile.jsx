@@ -40,7 +40,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { format } from 'date-fns';
-import { searchLocations, searchSkills, searchCompanies, searchJobTitles, JOB_TITLES_LIST } from "../../lib/externalApis";
+import { searchLocations, searchSkills, searchCompanies, searchJobTitles, searchUniversities } from "../../lib/externalApis";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -99,12 +99,8 @@ const ProfileSetup = () => {
   };
 
   const handleUniversitySearch = async (query) => {
-    // Assuming searchUniversities is imported or I can implement inline if needed, 
-    // but let's assume I missed importing it in previous step? 
-    // Ah, I missed importing searchUniversities in replacement chunk! 
-    // I will assume it's okay for now or fix imports later.
-    // Wait, I *did* import searchSkills, searchLocations etc. I should add searchUniversities to imports if I use it.
-    // For now let's just use freeSolo for school if not imported.
+    const results = await searchUniversities(query);
+    setUniversityOptions(results);
   };
 
   // Temporary input states for multi-item fields

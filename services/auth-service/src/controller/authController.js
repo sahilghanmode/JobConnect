@@ -242,11 +242,25 @@ export const forgotPasswordController = async (req, res) => {
         );
 
         const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        console.log(resetUrl)
 
         await transporter.sendMail({
             to: email,
-            subject: "Password Reset",
-            html: `<a href="${resetUrl}">Reset Password</a>`,
+            subject: "Reset Your Password - JobConnect",
+            html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                <h2 style="color: #000;">Password Reset Request</h2>
+                <p>Hello ${user.name || 'User'},</p>
+                <p>You recently requested to reset your password for your JobConnect account. Click the button below to reset it:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${resetUrl}" style="background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">Reset Password</a>
+                </div>
+                <p>If you did not request a password reset, please ignore this email.</p>
+                <p>This link will expire in 15 minutes.</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                <p style="font-size: 12px; color: #888;">Best regards,<br>The JobConnect Team</p>
+            </div>
+            `,
         });
 
         return res.status(200).json({ msg: "Reset link sent" });
@@ -342,3 +356,38 @@ export const getCurrentUserController = async (req, res) => {
         return res.status(401).json({ msg: "Invalid or expired token" });
     }
 };
+
+
+export const logoutController = (req, res) => {
+    res.clearCookie("authToken", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax"
+    });
+    return res.status(200).json({ msg: "Logged out successfully" });
+};
+
+export const getUserByIdController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) return res.status(400).json({ msg: "User ID is required" });
+
+        const user = await prisma.user.findUnique({
+            where: { id: parseInt(id) },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true
+            }
+        });
+
+        if (!user) return res.status(404).json({ msg: "User not found" });
+
+        return res.status(200).json(user);
+    } catch (err) {
+        return res.status(500).json({ msg: err.message });
+    }
+};
+

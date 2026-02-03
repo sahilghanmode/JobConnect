@@ -13,7 +13,7 @@ import {
 import { Add, WorkOutline, PeopleOutline } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import axiosInstance from '../../lib/axios';
+import jobInstance from '../../lib/jobInstance';
 import { Navbar } from '../../components/layout/Navbar';
 
 const RecruiterDashboard = () => {
@@ -26,7 +26,7 @@ const RecruiterDashboard = () => {
         const fetchJobs = async () => {
             if (!user?.id) return;
             try {
-                const response = await axiosInstance.get(`/jobs/recruiter/${user.id}`);
+                const response = await jobInstance.get(`/api/jobs/recruiter/${user.id}`);
                 setJobs(response.data);
             } catch (error) {
                 console.error("Failed to fetch jobs", error);
@@ -68,45 +68,42 @@ const RecruiterDashboard = () => {
                         </Button>
                     </Card>
                 ) : (
-                    <Grid container spacing={3}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {jobs.map((job) => (
-                            <Grid item xs={12} md={6} key={job.jobId}>
-                                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                    <CardContent sx={{ flexGrow: 1 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                            <Typography variant="h6" fontWeight="bold">
-                                                {job.jobTitle}
-                                            </Typography>
-                                            <Chip
-                                                label={job.status}
-                                                color={job.status === 'ACTIVE' ? 'success' : 'default'}
-                                                size="small"
-                                            />
-                                        </Box>
-                                        <Typography variant="body2" color="text.secondary" gutterBottom>
-                                            {job.companyName} • {job.location}
+                            <Card key={job.jobId} sx={{ display: 'flex', alignItems: 'center', p: 2, justifyContent: 'space-between', '&:hover': { bgcolor: 'grey.50' } }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Typography variant="h6" fontWeight="bold">
+                                            {job.jobTitle}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ mt: 2 }}>
-                                            Posted: {new Date(job.createdAt).toLocaleDateString()}
-                                        </Typography>
-                                        <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                startIcon={<PeopleOutline />}
-                                                onClick={() => navigate(`/recruiter/job/${job.jobId}/applications`)}
-                                            >
-                                                View Applications
-                                            </Button>
-                                            <Button size="small" color="inherit">
-                                                Edit
-                                            </Button>
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
+                                        <Chip
+                                            label={job.status}
+                                            color={job.status === 'ACTIVE' ? 'success' : 'default'}
+                                            size="small"
+                                            variant="outlined"
+                                        />
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {job.companyName} • {job.location} • Posted: {new Date(job.createdAt).toLocaleDateString()}
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Button
+                                        size="medium"
+                                        variant="outlined"
+                                        startIcon={<PeopleOutline />}
+                                        onClick={() => navigate(`/recruiter/job/${job.jobId}/applications`)}
+                                    >
+                                        Applications
+                                    </Button>
+                                    <Button size="medium" color="inherit">
+                                        Edit
+                                    </Button>
+                                </Box>
+                            </Card>
                         ))}
-                    </Grid>
+                    </Box>
                 )}
             </Container>
         </Box>

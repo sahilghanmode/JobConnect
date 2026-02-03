@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, signupUser } from "../../store/slices/authSlice.js";
@@ -188,6 +188,14 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       sx={{ mb: 2 }}
                     />
+
+                    {mode === "login" && (
+                      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+                        <Link to="/auth/forgot-password" style={{ textDecoration: "none", color: "#1976d2", fontSize: "0.875rem" }}>
+                          Forgot Password?
+                        </Link>
+                      </Box>
+                    )}
 
                     {mode === "signup" && (
                       <>

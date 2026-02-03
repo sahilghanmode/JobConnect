@@ -16,4 +16,5 @@ public class ProfileAddDTO {
     private String education; // JSON string
     private String location;
     private String avatarUrl;
+    private String bannerUrl;
 }

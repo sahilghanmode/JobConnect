@@ -17,6 +17,7 @@ import com.jobconnect.job.entities.User;
 import com.jobconnect.job.repository.CompanyRepository;
 import com.jobconnect.job.repository.JobRepository;
 
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,6 +35,10 @@ public class JobServiceImpl implements JobService {
 
         if (request.getCompanyId() != null) {
             job.setCompanyId(request.getCompanyId());
+            // Fetch company to fail fast if not found and to get missing name
+            Company company = companyRepository.findById(request.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
+            job.setCompanyName(company.getName());
         } else if (request.getCompanyName() != null && !request.getCompanyName().isEmpty()) {
             // Auto-create company if name provided but ID is missing
             Company company = companyRepository.findByName(request.getCompanyName())
@@ -44,6 +49,7 @@ public class JobServiceImpl implements JobService {
                         return companyRepository.save(newComp);
                     });
             job.setCompanyId(company.getCompanyId());
+            job.setCompanyName(company.getName());
         } else {
             throw new RuntimeException("Company ID or Company Name is required");
         }
@@ -57,7 +63,7 @@ public class JobServiceImpl implements JobService {
         job.setSalaryMin(request.getSalaryMin());
         job.setSalaryMax(request.getSalaryMax());
         job.setLocation(request.getLocation());
-        job.setIsRemote(request.getIsRemote());
+        job.setIsRemote(request.getIsRemote() != null ? request.getIsRemote() : false);
         job.setSkillsRequired(request.getSkillsRequired());
         job.setExpiresAt(request.getExpiresAt());
         job.setStatus(JobStatus.ACTIVE);
@@ -165,6 +171,7 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<com.jobconnect.job.dto.ApplicationResponse> getJobApplications(Long jobId) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found with id: " + jobId));

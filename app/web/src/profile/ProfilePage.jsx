@@ -15,20 +15,24 @@ import {
 } from "@mui/icons-material";
 import {
     updateBio, updateSkills, updateExperience,
-    updateEducation, updateHeadline, getProfileByUserId, updateLocation
+    updateEducation, updateHeadline, getProfileByUserId, updateLocation,
+    updateAvatar, updateBanner
 } from "../apis/profileApi.js";
+import { uploadImage } from "../apis/uploadApi.js";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Navbar } from "../components/layout/Navbar";
-import { searchUniversities, searchCompanies, searchLocations, JOB_TITLES_LIST } from "../lib/externalApis";
+import { searchUniversities, searchCompanies, searchLocations, searchJobTitles, searchSkills } from "../lib/externalApis";
 import { fetchUserPosts } from "../store/slices/feedSlice";
 import PostCard from "../components/feed/PostCard";
 import { useDispatch } from "react-redux";
 import { setUserProfile } from "../store/slices/authSlice";
+import { getUserById } from "../apis/userApi.js";
 
 
 const ProfilePage = () => {
     const navigate = useNavigate();
+    const { userId } = useParams();
     const dispatch = useDispatch();
     const { user, userProfile } = useSelector((state) => state.auth);
     const { userPosts, loading: postsLoading } = useSelector((state) => state.feed);
@@ -39,8 +43,9 @@ const ProfilePage = () => {
     const [education, setEducation] = useState([]);
     const [skills, setSkills] = useState([]);
 
-    // Fallback ID
-    const activeProfileId = fetchedData?.id || userProfile?.id;
+    // Logic: If param exists, use it. Else fall back to logged in user.
+    const activeProfileId = userId ? parseInt(userId) : user?.id;
+    const isOwner = activeProfileId === user?.id;
 
     // UI state
     const [profile, setProfile] = useState({
@@ -48,11 +53,12 @@ const ProfilePage = () => {
         headline: userProfile?.headline || "Software Engineer | React Developer",
         location: userProfile?.location || "New York, USA",
         about: userProfile?.bio || "Passionate developer...",
-        website: userProfile?.website || "johndoe.dev",
+        website: userProfile?.website || "github.com",
         company: "Tech Corp",
         email: user?.email || "user@example.com",
         phone: userProfile?.phone || "+1 234 567 890",
-        avatarUrl: userProfile?.avatarUrl || ""
+        avatarUrl: userProfile?.avatarUrl || "",
+        bannerUrl: userProfile?.bannerUrl || ""
     });
 
     const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -145,6 +151,49 @@ const ProfilePage = () => {
     }, [newEducation.school]);
 
 
+
+    // Job Title Autocomplete
+    const [titleOptions, setTitleOptions] = useState([]);
+    const [titleLoading, setTitleLoading] = useState(false);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            const query = newExperience.title;
+            if (query && typeof query === 'string' && query.length > 1) {
+                const search = async () => {
+                    setTitleLoading(true);
+                    const results = await searchJobTitles(query);
+                    setTitleOptions(results);
+                    setTitleLoading(false);
+                };
+                search();
+            }
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [newExperience.title]);
+
+    // Skill Autocomplete
+    const [skillOptions, setSkillOptions] = useState([]);
+    const [skillLoading, setSkillLoading] = useState(false);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (newSkill && typeof newSkill === 'string' && newSkill.length > 1) {
+                const search = async () => {
+                    setSkillLoading(true);
+                    const results = await searchSkills(newSkill);
+                    setSkillOptions(results);
+                    setSkillLoading(false);
+                };
+                search();
+            }
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [newSkill]);
+
+
+
+
     // Fetch Profile Data
     useEffect(() => {
         if (!user) {
@@ -154,8 +203,16 @@ const ProfilePage = () => {
 
         const loadProfile = async () => {
             try {
-                const res = await getProfileByUserId(user.id);
-                const data = res.data;
+                if (!activeProfileId) return;
+
+                const [profileRes, userRes] = await Promise.all([
+                    getProfileByUserId(activeProfileId),
+                    getUserById(activeProfileId)
+                ]);
+
+                const data = profileRes.data;
+                const userData = userRes.data;
+
                 setFetchedData(data);
 
                 // Parse complex fields
@@ -170,15 +227,18 @@ const ProfilePage = () => {
 
                 const currentExp = exp.find(e => e.duration?.toLowerCase().includes("present")) || exp[0];
 
-                setProfile(prev => ({
-                    ...prev,
-                    headline: data.headline || prev.headline,
-                    location: data.location || prev.location,
-                    about: data.bio || prev.about,
-                    avatarUrl: data.avatarUrl || prev.avatarUrl,
-                    company: currentExp?.company || prev.company,
-                    website: data.website || prev.website
-                }));
+                setProfile({
+                    name: userData.name || "User",
+                    headline: data.headline || "",
+                    location: data.location || "Location not set",
+                    about: data.bio || "No bio available",
+                    avatarUrl: data.avatarUrl || "",
+                    bannerUrl: data.bannerUrl || "",
+                    company: currentExp?.company || "",
+                    website: data.website || "", // Ensure these are cleared if not present
+                    email: userData.email || "", // Correctly set email from userData
+                    phone: data.phone || ""      // Ensure phone is cleared if not present
+                });
 
             } catch (err) {
                 console.error("Failed to fetch fresh profile data", err);
@@ -186,8 +246,7 @@ const ProfilePage = () => {
         };
 
         loadProfile();
-        loadProfile();
-    }, [user, navigate]);
+    }, [user, navigate, activeProfileId]);
 
     // Fetch User Posts
     useEffect(() => {
@@ -345,6 +404,34 @@ const ProfilePage = () => {
         } catch (err) { console.error(err); }
     };
 
+    const handleImageUpload = async (e, type) => {
+        if (!activeProfileId || !e.target.files[0]) return;
+        const file = e.target.files[0];
+
+        try {
+            // 1. Upload to Cloudinary
+            const imageUrl = await uploadImage(file);
+
+            // 2. Update Backend
+            if (type === 'avatar') {
+                await updateAvatar(activeProfileId, { avatarUrl: imageUrl });
+                setProfile(prev => ({ ...prev, avatarUrl: imageUrl }));
+                if (activeProfileId === user?.id) {
+                    dispatch(setUserProfile({ ...userProfile, avatarUrl: imageUrl }));
+                }
+            } else if (type === 'banner') {
+                await updateBanner(activeProfileId, { bannerUrl: imageUrl });
+                setProfile(prev => ({ ...prev, bannerUrl: imageUrl }));
+                if (activeProfileId === user?.id) {
+                    dispatch(setUserProfile({ ...userProfile, bannerUrl: imageUrl }));
+                }
+            }
+        } catch (err) {
+            console.error(`Failed to upload ${type}`, err);
+            // Optionally show error snackbar here
+        }
+    };
+
 
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -356,18 +443,53 @@ const ProfilePage = () => {
 
                         {/* Profile Card */}
                         <Card sx={{ mb: 4, overflow: "visible" }}>
-                            {/* Wrapper for Avatar and Cover - same as before */}
-                            <Box sx={{ height: 200, background: "linear-gradient(135deg, hsla(150, 25%, 45%, 0.3), hsla(350, 30%, 85%, 0.4), hsla(25, 30%, 75%, 0.4))", borderRadius: "16px 16px 0 0", position: "relative" }}>
-                                <IconButton sx={{ position: "absolute", right: 16, top: 16, bgcolor: "rgba(255,255,255,0.8)" }}><CameraAlt /></IconButton>
+                            {/* Wrapper for Avatar and Cover */}
+                            <Box sx={{
+                                height: 200,
+                                background: profile.bannerUrl ? `url(${profile.bannerUrl}) center/cover no-repeat` : "linear-gradient(135deg, hsla(150, 25%, 45%, 0.3), hsla(350, 30%, 85%, 0.4), hsla(25, 30%, 75%, 0.4))",
+                                borderRadius: "16px 16px 0 0",
+                                position: "relative"
+                            }}>
+                                {isOwner && (
+                                    <>
+                                        <input
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id="banner-upload"
+                                            type="file"
+                                            onChange={(e) => handleImageUpload(e, 'banner')}
+                                        />
+                                        <label htmlFor="banner-upload">
+                                            <IconButton component="span" sx={{ position: "absolute", right: 16, top: 16, bgcolor: "rgba(255,255,255,0.8)" }}>
+                                                <CameraAlt />
+                                            </IconButton>
+                                        </label>
+                                    </>
+                                )}
                             </Box>
                             <CardContent sx={{ pt: 0, px: 4, pb: 4 }}>
                                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", mt: -8 }}>
                                     <Box sx={{ position: "relative" }}>
-                                        <Avatar src={profile.avatarUrl} sx={{ width: 150, height: 150, border: "4px solid white", boxShadow: 3, fontSize: "3rem", bgcolor: "primary.main" }}>{profile.name ? profile.name[0] : "U"}</Avatar>
-                                        <IconButton sx={{ position: "absolute", bottom: 5, right: 5, bgcolor: "white", boxShadow: 1 }} size="small"><CameraAlt fontSize="small" /></IconButton>
+                                        <Avatar src={profile.avatarUrl} sx={{ width: 150, height: 150, boxShadow: 3, fontSize: "3rem", bgcolor: "primary.main" }}>{profile.name ? profile.name[0] : "U"}</Avatar>
+                                        {isOwner && (
+                                            <>
+                                                <input
+                                                    accept="image/*"
+                                                    style={{ display: 'none' }}
+                                                    id="avatar-upload"
+                                                    type="file"
+                                                    onChange={(e) => handleImageUpload(e, 'avatar')}
+                                                />
+                                                <label htmlFor="avatar-upload">
+                                                    <IconButton component="span" sx={{ position: "absolute", bottom: 5, right: 5, bgcolor: "white", boxShadow: 1 }} size="small">
+                                                        <CameraAlt fontSize="small" />
+                                                    </IconButton>
+                                                </label>
+                                            </>
+                                        )}
                                     </Box>
                                     <Box sx={{ mt: 2 }}>
-                                        <Button variant="outlined" startIcon={<Edit />} onClick={() => { setEditedProfile(profile); setEditProfileOpen(true); }} sx={{ textTransform: "none" }}>Edit Profile</Button>
+                                        {isOwner && <Button variant="outlined" startIcon={<Edit />} onClick={() => { setEditedProfile(profile); setEditProfileOpen(true); }} sx={{ textTransform: "none" }}>Edit Profile</Button>}
                                     </Box>
                                 </Box>
                                 <Box sx={{ mt: 3 }}>
@@ -385,28 +507,44 @@ const ProfilePage = () => {
                         <Box sx={{ display: "grid", gridTemplateColumns: { md: "2fr 1fr" }, gap: 4 }}>
                             <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
                                 {/* About */}
-                                <Card><CardContent><Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}><Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">About</Typography><IconButton size="small" onClick={() => { setEditedAbout(profile.about); setEditAboutOpen(true); }}><Edit fontSize="small" /></IconButton></Box><Typography variant="body1" color="text.secondary" sx={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>{profile.about}</Typography></CardContent></Card>
+                                <Card><CardContent>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                                        <Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">About</Typography>
+                                        {isOwner && <IconButton size="small" onClick={() => { setEditedAbout(profile.about); setEditAboutOpen(true); }}><Edit fontSize="small" /></IconButton>}
+                                    </Box>
+                                    <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>{profile.about}</Typography>
+                                </CardContent></Card>
 
                                 {/* Experience */}
-                                <Card><CardContent><Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}><Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">Experience</Typography><IconButton size="small" onClick={() => setAddExperienceOpen(true)}><Add /></IconButton></Box>
+                                <Card><CardContent>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                                        <Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">Experience</Typography>
+                                        {isOwner && <IconButton size="small" onClick={() => setAddExperienceOpen(true)}><Add /></IconButton>}
+                                    </Box>
                                     <List disablePadding>{experiences.map((exp, i) => (
-                                        <Box key={exp.id || i}><ListItem sx={{ px: 0, alignItems: "flex-start" }}><Box sx={{ mr: 2 }}><Work color="primary" /></Box><ListItemText primary={exp.title} secondary={<Box><Typography variant="body2">{exp.company}</Typography><Typography variant="body2" color="text.secondary">{exp.startDate} - {exp.endDate} · {exp.location}</Typography><Typography variant="body2" sx={{ mt: 1 }}>{exp.description}</Typography></Box>} /><ListItemSecondaryAction><IconButton size="small" onClick={() => handleDeleteExperience(exp.id)}><Delete fontSize="small" /></IconButton></ListItemSecondaryAction></ListItem>{i < experiences.length - 1 && <Divider sx={{ my: 2 }} />}</Box>
+                                        <Box key={exp.id || i}><ListItem sx={{ px: 0, alignItems: "flex-start" }}><Box sx={{ mr: 2 }}><Work color="primary" /></Box><ListItemText primary={exp.title} secondary={<Box><Typography variant="body2">{exp.company}</Typography><Typography variant="body2" color="text.secondary">{exp.startDate} - {exp.endDate} · {exp.location}</Typography><Typography variant="body2" sx={{ mt: 1 }}>{exp.description}</Typography></Box>} /><ListItemSecondaryAction>{isOwner && <IconButton size="small" onClick={() => handleDeleteExperience(exp.id)}><Delete fontSize="small" /></IconButton>}</ListItemSecondaryAction></ListItem>{i < experiences.length - 1 && <Divider sx={{ my: 2 }} />}</Box>
                                     ))}</List></CardContent></Card>
 
                                 {/* Education */}
-                                <Card><CardContent><Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}><Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">Education</Typography><IconButton size="small" onClick={() => setAddEducationOpen(true)}><Add /></IconButton></Box>
+                                <Card><CardContent>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                                        <Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">Education</Typography>
+                                        {isOwner && <IconButton size="small" onClick={() => setAddEducationOpen(true)}><Add /></IconButton>}
+                                    </Box>
                                     <List disablePadding>{education.map((edu, i) => (
-                                        <Box key={edu.id || i}><ListItem sx={{ px: 0, alignItems: "flex-start" }}><Box sx={{ mr: 2 }}><School color="action" /></Box><ListItemText primary={edu.school} secondary={<Box><Typography variant="body2">{edu.degree}, {edu.field}</Typography><Typography variant="body2" color="text.secondary">{edu.startDate} - {edu.endDate}</Typography></Box>} /><ListItemSecondaryAction><IconButton size="small" onClick={() => handleDeleteEducation(edu.id)}><Delete fontSize="small" /></IconButton></ListItemSecondaryAction></ListItem>{i < education.length - 1 && <Divider sx={{ my: 2 }} />}</Box>
+                                        <Box key={edu.id || i}><ListItem sx={{ px: 0, alignItems: "flex-start" }}><Box sx={{ mr: 2 }}><School color="action" /></Box><ListItemText primary={edu.school} secondary={<Box><Typography variant="body2">{edu.degree}, {edu.field}</Typography><Typography variant="body2" color="text.secondary">{edu.startDate} - {edu.endDate}</Typography></Box>} /><ListItemSecondaryAction>{isOwner && <IconButton size="small" onClick={() => handleDeleteEducation(edu.id)}><Delete fontSize="small" /></IconButton>}</ListItemSecondaryAction></ListItem>{i < education.length - 1 && <Divider sx={{ my: 2 }} />}</Box>
                                     ))}</List></CardContent></Card>
-
-
-
-
                             </Box>
 
                             <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
                                 {/* Skills */}
-                                <Card><CardContent><Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}><Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">Skills</Typography><IconButton size="small" onClick={() => setAddSkillOpen(true)}><Add /></IconButton></Box><Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>{skills.map((skill, i) => (<Chip key={i} label={skill} onDelete={() => handleDeleteSkill(skill)} />))}</Box></CardContent></Card>
+                                <Card><CardContent>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                                        <Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif">Skills</Typography>
+                                        {isOwner && <IconButton size="small" onClick={() => setAddSkillOpen(true)}><Add /></IconButton>}
+                                    </Box>
+                                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>{skills.map((skill, i) => (<Chip key={i} label={skill} onDelete={isOwner ? () => handleDeleteSkill(skill) : undefined} />))}</Box>
+                                </CardContent></Card>
                                 {/* Contact */}
                                 <Card><CardContent><Typography variant="h6" fontWeight={700} fontFamily="'Playfair Display', serif" sx={{ mb: 2 }}>Contact</Typography><List disablePadding><ListItem sx={{ px: 0 }}><Email sx={{ mr: 2 }} /><ListItemText primary="Email" secondary={profile.email} /></ListItem><ListItem sx={{ px: 0 }}><Phone sx={{ mr: 2 }} /><ListItemText primary="Phone" secondary={profile.phone} /></ListItem><ListItem sx={{ px: 0 }}><LinkIcon sx={{ mr: 2 }} /><ListItemText primary="Website" secondary={<a href={`https://${profile.website}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "inherit" }}>{profile.website} <OpenInNew sx={{ fontSize: 12, ml: 0.5 }} /></a>} /></ListItem></List></CardContent></Card>
                             </Box>
@@ -457,14 +595,69 @@ const ProfilePage = () => {
 
                         {/* Edit About, Add Skill - Same as before */}
                         <Dialog open={editAboutOpen} onClose={() => setEditAboutOpen(false)} maxWidth="sm" fullWidth><DialogTitle>Edit About</DialogTitle><DialogContent><TextField fullWidth multiline rows={6} value={editedAbout} onChange={(e) => setEditedAbout(e.target.value)} sx={{ mt: 1 }} /></DialogContent><DialogActions><Button onClick={() => setEditAboutOpen(false)}>Cancel</Button><Button variant="contained" onClick={handleSaveAbout}>Save</Button></DialogActions></Dialog>
-                        <Dialog open={addSkillOpen} onClose={() => setAddSkillOpen(false)} maxWidth="xs" fullWidth><DialogTitle>Add Skill</DialogTitle><DialogContent><TextField label="Skill" fullWidth value={newSkill} onChange={(e) => setNewSkill(e.target.value)} sx={{ mt: 1 }} onKeyDown={(e) => e.key === "Enter" && handleAddSkill()} /></DialogContent><DialogActions><Button onClick={() => setAddSkillOpen(false)}>Cancel</Button><Button variant="contained" onClick={handleAddSkill}>Add</Button></DialogActions></Dialog>
+                        <Dialog open={addSkillOpen} onClose={() => setAddSkillOpen(false)} maxWidth="xs" fullWidth>
+                            <DialogTitle>Add Skill</DialogTitle>
+                            <DialogContent>
+                                <Autocomplete
+                                    freeSolo
+                                    options={skillOptions}
+                                    loading={skillLoading}
+                                    onInputChange={(e, newValue) => {
+                                        setNewSkill(newValue);
+                                        // Debounce logic handled in useEffect below
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Skill"
+                                            fullWidth
+                                            sx={{ mt: 1 }}
+                                            InputProps={{
+                                                ...params.InputProps,
+                                                endAdornment: (
+                                                    <>
+                                                        {skillLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                                        {params.InputProps.endAdornment}
+                                                    </>
+                                                )
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => setAddSkillOpen(false)}>Cancel</Button>
+                                <Button variant="contained" onClick={handleAddSkill}>Add</Button>
+                            </DialogActions>
+                        </Dialog>
 
                         {/* Add Experience Dialog */}
                         <Dialog open={addExperienceOpen} onClose={() => setAddExperienceOpen(false)} maxWidth="sm" fullWidth>
                             <DialogTitle>Add Experience</DialogTitle>
                             <DialogContent>
                                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-                                    <Autocomplete freeSolo options={JOB_TITLES_LIST} value={newExperience.title} onInputChange={(e, newValue) => setNewExperience({ ...newExperience, title: newValue })} renderInput={(params) => <TextField {...params} label="Title" fullWidth />} />
+                                    <Autocomplete
+                                        freeSolo
+                                        options={titleOptions}
+                                        loading={titleLoading}
+                                        onInputChange={(e, newValue) => setNewExperience({ ...newExperience, title: newValue })}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Title"
+                                                fullWidth
+                                                InputProps={{
+                                                    ...params.InputProps,
+                                                    endAdornment: (
+                                                        <>
+                                                            {titleLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                                            {params.InputProps.endAdornment}
+                                                        </>
+                                                    )
+                                                }}
+                                            />
+                                        )}
+                                    />
                                     <Autocomplete freeSolo options={companyOptions} getOptionLabel={(option) => typeof option === 'string' ? option : option.name} filterOptions={(x) => x} loading={companyLoading} onInputChange={(e, newValue) => setNewExperience({ ...newExperience, company: newValue })} renderInput={(params) => <TextField {...params} label="Company" fullWidth InputProps={{ ...params.InputProps, endAdornment: (<>{companyLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>) }} />} />
                                     <Autocomplete
                                         freeSolo
